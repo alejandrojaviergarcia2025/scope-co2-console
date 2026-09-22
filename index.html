@@ -1,0 +1,740 @@
+<title>SCOPE CO2 — Deconvolution Console</title>
+<style>
+  :root{
+    --bg:#F7F6F2; --surface:#FFFFFF; --surface-2:#EFEDE6; --ink:#171D24; --ink-soft:#5C6672;
+    --border:#E2E0D8; --accent:#2E7D8C; --accent-strong:#16324F; --amber:#C97A2B; --green:#3E8B5C; --red:#B23B3B;
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+    --sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;
+    --hero-bg:#0D1520; --hero-ink:#DCE6EC; --hero-ink-soft:#8CA0AE; --hero-grid:#1C2A38;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#11161C; --surface:#1A2027; --surface-2:#151A20; --ink:#E7E9EA; --ink-soft:#98A1AB; --border:#2A323B;
+      --accent:#4FA6B8; --accent-strong:#3E6E93; --amber:#D98F44; --green:#57A876; --red:#C9564F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#11161C; --surface:#1A2027; --surface-2:#151A20; --ink:#E7E9EA; --ink-soft:#98A1AB; --border:#2A323B;
+    --accent:#4FA6B8; --accent-strong:#3E6E93; --amber:#D98F44; --green:#57A876; --red:#C9564F;
+  }
+  *{box-sizing:border-box}
+  button{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans)}
+  h1,h2,h3{font-family:var(--sans);font-weight:700;letter-spacing:-.01em;text-wrap:balance;margin:0}
+  p{margin:0;line-height:1.6}
+  code{font-family:var(--mono);font-size:.94em}
+  .eyebrow{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+  .wrap{max-width:1080px;margin:0 auto;padding-inline:20px}
+
+  /* ---------- hero ---------- */
+  .hero{background:var(--hero-bg);color:var(--hero-ink);overflow:hidden;position:relative}
+  .hero .wrap{padding-block:26px 0}
+  .hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .hero-title{font-size:30px;color:#fff}
+  .hero-sub{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;color:#6FBAC9;margin-top:6px}
+  .live-pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--hero-ink-soft);border:1px solid #26384A;border-radius:20px;padding:5px 12px 5px 10px}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#4FA6B8;box-shadow:0 0 0 0 rgba(79,166,184,.6);animation:pulse 2.2s ease-out infinite}
+  @media (prefers-reduced-motion: reduce){.live-dot{animation:none}}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(79,166,184,.55)}70%{box-shadow:0 0 0 8px rgba(79,166,184,0)}100%{box-shadow:0 0 0 0 rgba(79,166,184,0)}}
+
+  .telemetry{display:flex;gap:26px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--hero-ink-soft);margin-top:18px}
+  .telemetry b{color:var(--hero-ink);font-weight:600}
+
+  .scope{position:relative;margin-top:18px;height:150px}
+  .scope canvas{display:block;width:100%;height:100%}
+  .scope-tag{position:absolute;top:10px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:var(--hero-ink-soft);pointer-events:none}
+  .scope-tag i{width:6px;height:6px;border-radius:50%;display:block}
+
+  .spectrum-bar{height:9px;border-radius:5px;margin-top:14px;background:linear-gradient(90deg,#4B1F82 0%,#5B3AA6 12%,#4B4FD6 27%,#2F7FE0 37%,#2FA6A0 45%,#4FAE4F 52%,#D8C23A 58%,#E08A2E 63%,#C23B2E 75%,#5A1414 100%)}
+  .spectrum-ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--hero-ink-soft);margin-top:5px;padding-bottom:20px}
+
+  /* ---------- header / nav ---------- */
+  header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--border)}
+  nav.tabs{display:flex;gap:4px;overflow-x:auto}
+  nav.tabs button{font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;background:none;border:none;border-bottom:2px solid transparent;color:var(--ink-soft);padding:12px 14px;cursor:pointer;white-space:nowrap;transition:color .15s ease}
+  nav.tabs button:hover{color:var(--ink)}
+  nav.tabs button[aria-selected="true"]{color:var(--accent-strong);border-bottom-color:var(--accent)}
+  nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  main{padding-block:28px 60px}
+  section[role="tabpanel"]{display:flex;flex-direction:column;gap:26px}
+  section[role="tabpanel"].enter{animation:rise .38s cubic-bezier(.2,.7,.3,1) both}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion: reduce){section[role="tabpanel"].enter{animation:none}}
+
+  .lede{max-width:640px;color:var(--ink-soft);font-size:15px}
+
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:box-shadow .15s ease}
+  .card h3{font-size:15px}
+
+  /* species buttons (overview) */
+  .species-row{display:flex;gap:10px;flex-wrap:wrap}
+  .species-btn{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;font-weight:600;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:9px 16px;cursor:pointer;color:var(--ink);transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+  .species-btn i{width:9px;height:9px;border-radius:50%;display:block}
+  .species-btn:hover{transform:translateY(-1px);box-shadow:0 6px 14px rgba(20,30,40,.08)}
+  .species-btn.active{border-color:currentColor}
+  .species-btn.nox.active{color:var(--amber);box-shadow:0 0 0 2px rgba(201,122,43,.22)}
+  .species-btn.sox.active{color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,140,.22)}
+  .species-btn.h2o.active{color:#5C7280;box-shadow:0 0 0 2px rgba(140,160,174,.25)}
+  .species-btn .hint{color:var(--ink-soft);font-weight:400}
+  .species-panel{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .species-panel.reveal{animation:rise .32s cubic-bezier(.2,.7,.3,1) both}
+  @media (prefers-reduced-motion: reduce){.species-panel.reveal{animation:none}}
+  .species-mol{flex:0 0 150px}
+  .species-mol svg{width:100%;height:auto}
+  .species-text{flex:1;min-width:240px;display:flex;flex-direction:column;gap:8px}
+  .formula-badge{font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;border-radius:6px;padding:3px 10px;width:fit-content}
+  .note-line{font-size:12px;color:var(--ink-soft);font-style:italic;border-top:1px solid var(--border);padding-top:8px;margin-top:2px}
+
+  /* QDOAS intro (software path) */
+  .qdoas-flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .qflow-box{font-family:var(--mono);font-size:11.5px;font-weight:600;border-radius:8px;padding:10px 13px;background:var(--surface-2);color:var(--ink);border:1px solid var(--border)}
+  .qflow-box.accent{background:var(--accent-strong);color:#fff;border-color:var(--accent-strong)}
+  .qflow-box.out{background:var(--green);color:#fff;border-color:var(--green)}
+  .qflow-arrow{color:var(--ink-soft);font-size:15px}
+  .ghost-btn{font-family:var(--mono);font-size:12px;font-weight:600;background:none;border:1px solid var(--border);border-radius:20px;padding:8px 14px;cursor:pointer;color:var(--accent-strong);transition:background .15s ease,transform .15s ease}
+  .ghost-btn:hover{background:var(--surface-2);transform:translateY(-1px)}
+  .ghost-btn.code{color:var(--amber);border-color:var(--amber)}
+  .ghost-btn.license{color:var(--green);border-color:var(--green)}
+  .qdoas-expand{margin-top:4px;padding-top:14px;border-top:1px solid var(--border)}
+  .qdoas-expand.reveal{animation:rise .32s cubic-bezier(.2,.7,.3,1) both}
+  @media (prefers-reduced-motion: reduce){.qdoas-expand.reveal{animation:none}}
+  .qdoas-expand pre{background:var(--hero-bg);color:#B9E4EC;border-radius:8px;padding:16px 18px;overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.6}
+  .qdoas-expand pre .cmt{color:#6FBAC9}
+
+  /* QDOAS screenshot carousel */
+  .carousel-frame{background:var(--surface-2);border:1px solid var(--border);border-radius:10px;height:320px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .carousel-frame img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+  @media (max-width:640px){.carousel-frame{height:220px}}
+  .carousel-nav{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
+  .carousel-dots{display:flex;gap:6px}
+  .carousel-dots button{width:8px;height:8px;border-radius:50%;border:none;background:var(--border);padding:0;cursor:pointer}
+  .carousel-dots button.active{background:var(--accent)}
+
+  /* plain-language notes (libraries) */
+  .plain-note{background:var(--surface-2);border-left:3px solid var(--accent);border-radius:6px;padding:9px 13px;font-size:12.5px;color:var(--accent-strong);line-height:1.55;margin-bottom:4px}
+
+  /* architecture */
+  .lane-label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  .lane{display:flex;align-items:center;gap:2px;overflow-x:auto;padding:4px 2px}
+  .node{flex:1 0 120px;min-width:104px;border-radius:9px;padding:12px 10px;color:#fff;font-size:12px;font-weight:600;line-height:1.3;transition:transform .15s ease,box-shadow .15s ease,outline-color .15s ease;cursor:pointer;font-family:inherit;border:none;text-align:center;display:flex;flex-direction:column;align-items:center;outline:2px solid transparent;outline-offset:2px}
+  .node:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 18px rgba(20,30,40,.18)}
+  .node:focus-visible{outline-color:#fff}
+  .node.is-active{outline-color:#fff;box-shadow:0 8px 18px rgba(20,30,40,.22)}
+  .node small{display:block;font-weight:400;font-size:10px;opacity:.82;margin-top:2px}
+  .node-icon{width:20px;height:20px;stroke:#fff;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;margin-bottom:6px}
+  .node.hw{background:var(--accent-strong)}
+  .node.fmt{background:var(--amber)}
+  .node.sync{background:#6B7280}
+  .node.sw{background:var(--accent)}
+  .node.out{background:var(--green)}
+  .flow{flex:0 0 26px;height:20px;position:relative;display:flex;align-items:center}
+  .flow::before{content:"";display:block;width:100%;height:2px;background-image:linear-gradient(90deg, var(--ink-soft) 55%, transparent 0);background-size:9px 2px;background-repeat:repeat-x;animation:flowmove .55s linear infinite}
+  .flow::after{content:"";position:absolute;right:-1px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:4px solid transparent;border-bottom:4px solid transparent;border-left:6px solid var(--ink-soft)}
+  @keyframes flowmove{from{background-position:0 0}to{background-position:-9px 0}}
+  @media (prefers-reduced-motion: reduce){.flow::before{animation:none}}
+  .converge-note{font-size:12px;font-style:italic;color:var(--ink-soft);text-align:center}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-soft);border-top:1px solid var(--border);padding-top:14px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .arch-detail{min-height:76px}
+  .arch-detail .placeholder{color:var(--ink-soft);font-size:13px;font-style:italic}
+  .arch-detail.reveal{animation:rise .28s cubic-bezier(.2,.7,.3,1) both}
+  @media (prefers-reduced-motion: reduce){.arch-detail.reveal{animation:none}}
+
+
+  /* options */
+  .opt-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+  @media (max-width:860px){.opt-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media (max-width:520px){.opt-grid{grid-template-columns:1fr}}
+  .opt{display:flex;flex-direction:column;gap:8px}
+  .opt:hover{box-shadow:0 8px 20px rgba(20,30,40,.09)}
+  .tag{font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;border-radius:6px;padding:2px 8px;width:fit-content}
+  .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-soft);margin-top:6px}
+  .val{font-size:13px;line-height:1.5}
+  .callout{background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:8px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
+
+  /* libraries */
+  .lib-group{display:flex;flex-direction:column;gap:10px}
+  .lib-row{display:flex;gap:14px;padding:12px 0;border-top:1px solid var(--border)}
+  .lib-row:first-of-type{border-top:none}
+  .lib-name{font-family:var(--mono);font-size:13px;font-weight:600;flex:0 0 168px;color:var(--accent-strong)}
+  .lib-desc{font-size:13px;color:var(--ink-soft);line-height:1.55}
+  .pill{display:inline-block;font-family:var(--mono);font-size:10.5px;border:1px solid var(--border);border-radius:20px;padding:1px 8px;color:var(--ink-soft);margin-left:6px}
+
+  /* hardware / avasoft */
+  .hero-photo{width:100%;border-radius:12px;border:1px solid var(--border);display:block;object-fit:cover;max-height:420px}
+  .photo-caption{font-size:12.5px;color:var(--ink-soft);margin-top:8px;line-height:1.5}
+  .hw-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  @media (max-width:760px){.hw-grid{grid-template-columns:1fr}}
+  .hw-card{display:flex;flex-direction:column;gap:10px}
+  .hw-photo{border-radius:8px;border:1px solid var(--border);overflow:hidden;background:var(--surface-2)}
+  .hw-photo img{width:100%;display:block;object-fit:cover;height:190px}
+  .spec-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;padding:6px 0;border-top:1px solid var(--border)}
+  .spec-row:first-of-type{border-top:none}
+  .spec-row b{color:var(--ink-soft);font-weight:600}
+  .spec-row span{text-align:right;font-family:var(--mono);font-size:12px}
+  .dl-link{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;font-weight:600;color:var(--accent-strong);border:1px solid var(--border);border-radius:20px;padding:6px 12px;text-decoration:none;width:fit-content;transition:background .15s ease,transform .15s ease}
+  .dl-link:hover{background:var(--surface-2);transform:translateY(-1px)}
+  .dl-row{display:flex;gap:8px;flex-wrap:wrap}
+
+  footer{border-top:1px solid var(--border);padding-block:16px 30px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:12px;color:var(--ink-soft)}
+</style>
+
+<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true">
+<defs>
+  <symbol id="icon-spectrometer" viewBox="0 0 24 24"><rect x="2.5" y="8.5" width="9" height="9" rx="1.2"/><path d="M11.5,10 L21.5,7 M11.5,13 L21.5,13 M11.5,16 L21.5,19"/><circle cx="7" cy="13" r="1.4" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="icon-laptop" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="10.5" rx="1.2"/><path d="M2,19 L22,19 L20,15.5 L4,15.5 Z"/></symbol>
+  <symbol id="icon-file" viewBox="0 0 24 24"><path d="M6,2 L14,2 L19,7 L19,22 L6,22 Z"/><path d="M14,2 L14,7 L19,7"/><path d="M8.5,13 L15.5,13 M8.5,17 L15.5,17"/></symbol>
+  <symbol id="icon-cloud" viewBox="0 0 24 24"><path d="M7,18.5 Q3,18.5 3,14.5 Q3,11.3 6.2,10.8 Q6.8,6.3 11.3,6.3 Q15.3,6.3 16.3,10.3 Q19.5,10.3 19.5,13.8 Q19.5,18.5 15.3,18.5 Z"/></symbol>
+  <symbol id="icon-code" viewBox="0 0 24 24"><path d="M8,6 L3,12 L8,18 M16,6 L21,12 L16,18"/></symbol>
+  <symbol id="icon-sensor" viewBox="0 0 24 24"><rect x="7.5" y="9" width="9" height="9" rx="2"/><path d="M12,2 L12,9 M4.5,4.5 L9,9 M19.5,4.5 L15,9"/></symbol>
+  <symbol id="icon-daq" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="1.4"/><path d="M5.5,15 L8,9.5 L10.5,15 L12.5,11 L14.5,15 L17,9.5 L18.5,15"/></symbol>
+  <symbol id="icon-thermo" viewBox="0 0 24 24"><path d="M12,3 a2,2 0 0 1 2,2 L14,14.5 a4,4 0 1 1 -4,0 L10,5 a2,2 0 0 1 2,-2 Z"/><circle cx="12" cy="18" r="1.1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="icon-funnel" viewBox="0 0 24 24"><path d="M3,4 L21,4 L14,13 L14,20 L10,20 L10,13 Z"/></symbol>
+  <symbol id="icon-chart" viewBox="0 0 24 24"><path d="M4,21 L4,3.5 M4,21 L21.5,21"/><rect x="7.5" y="12.5" width="3" height="8.5"/><rect x="13" y="8" width="3" height="13"/><rect x="18.5" y="14.5" width="3" height="6.5"/></symbol>
+</defs>
+</svg>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-top">
+      <div>
+        <div class="hero-sub">SCOPE CO2 &middot; ARPA-E IGNIITE &middot; Colorado School of Mines</div>
+        <h1 class="hero-title">SCOPE CO2 &mdash; deconvolution console</h1>
+      </div>
+      <div class="live-pill"><span class="live-dot"></span>PREVIEW &middot; NOT LIVE INSTRUMENT DATA</div>
+    </div>
+    <div class="telemetry">
+      <div>TECHNIQUE <b>DOAS</b></div>
+      <div>RANGE <b>200&ndash;871 nm</b></div>
+      <div>INSTRUMENT <b>AvaSpec-ULS2048XL+-EVO</b></div>
+      <div>TARGETS <b>NOx &middot; SOx &middot; H2O</b></div>
+      <div>PREPARED <b>Sept 21, 2026</b></div>
+    </div>
+    <div class="scope">
+      <canvas id="scopeCanvas" aria-hidden="true"></canvas>
+      <div class="scope-tag" style="left:23%"><i style="background:var(--amber)"></i>NOx</div>
+      <div class="scope-tag" style="left:53%"><i style="background:var(--accent)"></i>SOx</div>
+      <div class="scope-tag" style="left:80%"><i style="background:#8CA0AE"></i>H2O</div>
+    </div>
+    <div class="spectrum-bar" role="img" aria-label="Wavelength range of the AvaSpec spectrometer, 200 to 871 nanometers"></div>
+    <div class="spectrum-ticks"><span>200 nm</span><span>400 nm</span><span>600 nm</span><span>871 nm</span></div>
+  </div>
+</div>
+
+<header class="top">
+  <div class="wrap">
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" aria-selected="true" aria-controls="p-overview" id="t-overview">01 &middot; Overview</button>
+      <button role="tab" aria-selected="false" aria-controls="p-arch" id="t-arch">02 &middot; Architecture</button>
+      <button role="tab" aria-selected="false" aria-controls="p-options" id="t-options">03 &middot; Software path</button>
+      <button role="tab" aria-selected="false" aria-controls="p-libs" id="t-libs">04 &middot; Libraries</button>
+      <button role="tab" aria-selected="false" aria-controls="p-hardware" id="t-hardware">05 &middot; Hardware</button>
+      <button role="tab" aria-selected="false" aria-controls="p-avasoft" id="t-avasoft">06 &middot; AvaSoft</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+<main>
+    <section id="p-overview" role="tabpanel" aria-labelledby="t-overview" class="enter">
+      <div>
+        <h2 style="font-size:19px">Look closer: the three species this instrument targets</h2>
+        <p class="lede" style="margin-top:6px">Click one to see its structure and why it matters to CO2-stream purity. Their position on the spectrum above is illustrative — this project hasn't pinned down yet exactly where each one's absorption band sits in the 200&ndash;871&nbsp;nm range, which is precisely the kind of gap this console is meant to surface, not hide.</p>
+      </div>
+      <div class="species-row">
+        <button type="button" class="species-btn nox" data-species="nox"><i style="background:var(--amber)"></i>NOx<span class="hint">nitrogen oxides</span></button>
+        <button type="button" class="species-btn sox" data-species="sox"><i style="background:var(--accent)"></i>SOx<span class="hint">sulfur oxides</span></button>
+        <button type="button" class="species-btn h2o" data-species="h2o"><i style="background:#8CA0AE"></i>H2O<span class="hint">water vapor</span></button>
+      </div>
+
+      <div id="detail-nox" class="card species-panel" hidden>
+        <div class="species-mol" aria-hidden="true">
+          <svg viewBox="0 0 150 110"><line x1="75" y1="55" x2="30" y2="90" stroke="#8B93A0" stroke-width="3"/><line x1="75" y1="55" x2="120" y2="90" stroke="#8B93A0" stroke-width="3"/><circle cx="75" cy="55" r="16" fill="#3B5BA5"/><circle cx="30" cy="90" r="13" fill="#B23B3B"/><circle cx="120" cy="90" r="13" fill="#B23B3B"/><text x="75" y="60" text-anchor="middle" font-family="monospace" font-size="12" fill="#fff">N</text><text x="30" y="95" text-anchor="middle" font-family="monospace" font-size="11" fill="#fff">O</text><text x="120" y="95" text-anchor="middle" font-family="monospace" font-size="11" fill="#fff">O</text></svg>
+        </div>
+        <div class="species-text">
+          <span class="formula-badge" style="background:var(--amber)">NO &middot; NO&#8322;</span>
+          <p class="val">One of the three species this software has to pull out of the differential absorption spectrum, per the project's own goal statement. NOx typically shows up as a byproduct of combustion or upstream process chemistry, riding along in the CO2 stream being monitored.</p>
+          <p class="note-line">Marked at ~23% of the scope trace above for illustration only &mdash; the real band position isn't confirmed yet.</p>
+        </div>
+      </div>
+      <div id="detail-sox" class="card species-panel" hidden>
+        <div class="species-mol" aria-hidden="true">
+          <svg viewBox="0 0 150 110"><line x1="75" y1="55" x2="30" y2="90" stroke="#8B93A0" stroke-width="3"/><line x1="75" y1="55" x2="120" y2="90" stroke="#8B93A0" stroke-width="3"/><circle cx="75" cy="55" r="17" fill="#D8B23A"/><circle cx="30" cy="90" r="13" fill="#B23B3B"/><circle cx="120" cy="90" r="13" fill="#B23B3B"/><text x="75" y="60" text-anchor="middle" font-family="monospace" font-size="12" fill="#fff">S</text><text x="30" y="95" text-anchor="middle" font-family="monospace" font-size="11" fill="#fff">O</text><text x="120" y="95" text-anchor="middle" font-family="monospace" font-size="11" fill="#fff">O</text></svg>
+        </div>
+        <div class="species-text">
+          <span class="formula-badge" style="background:var(--accent)">SO&#8322;</span>
+          <p class="val">The second target species. SOx generally traces back to sulfur-containing feedstock or contamination further up the process &mdash; a signature worth catching before it travels downstream with the CO2.</p>
+          <p class="note-line">Marked at ~53% of the scope trace above for illustration only &mdash; the real band position isn't confirmed yet.</p>
+        </div>
+      </div>
+      <div id="detail-h2o" class="card species-panel" hidden>
+        <div class="species-mol" aria-hidden="true">
+          <svg viewBox="0 0 150 110"><line x1="75" y1="55" x2="35" y2="85" stroke="#8B93A0" stroke-width="3"/><line x1="75" y1="55" x2="115" y2="85" stroke="#8B93A0" stroke-width="3"/><circle cx="75" cy="55" r="15" fill="#B23B3B"/><circle cx="35" cy="85" r="10" fill="#E7E9EA" stroke="#8B93A0" stroke-width="1.5"/><circle cx="115" cy="85" r="10" fill="#E7E9EA" stroke="#8B93A0" stroke-width="1.5"/><text x="75" y="60" text-anchor="middle" font-family="monospace" font-size="12" fill="#fff">O</text><text x="35" y="89" text-anchor="middle" font-family="monospace" font-size="10" fill="#171D24">H</text><text x="115" y="89" text-anchor="middle" font-family="monospace" font-size="10" fill="#171D24">H</text></svg>
+        </div>
+        <div class="species-text">
+          <span class="formula-badge" style="background:#5C7280">H&#8322;O</span>
+          <p class="val">Residual moisture in the CO2 stream &mdash; a target in its own right, and also a complication: water vapor's own absorption structure can overlap with NOx and SOx features, which is part of why the fit needs to separate all three at once rather than one at a time.</p>
+          <p class="note-line">Marked at ~80% of the scope trace above for illustration only &mdash; the real band position isn't confirmed yet.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-arch" role="tabpanel" aria-labelledby="t-arch" hidden>
+      <div>
+        <h2 style="font-size:20px">How the pieces would connect</h2>
+        <p class="lede" style="margin-top:6px">Two independent acquisition channels, on two different vendor SDKs, both feeding the same calibration and deconvolution logic. Click any piece for what it actually is. This is the current working plan &mdash; none of the software boxes below exist as code yet.</p>
+      </div>
+      <div class="card" style="display:flex;flex-direction:column;gap:16px">
+        <div>
+          <div class="lane-label">UV-Vis channel</div>
+          <div class="lane">
+            <button type="button" class="node hw" data-title="AvaSpec-ULS2048XL+-EVO" data-detail="The UV-Vis spectrometer itself &mdash; 200&ndash;871 nm, Serial 7618612SP. The sensor that actually measures the spectrum passing through the CO2 sample."><svg class="node-icon"><use href="#icon-spectrometer"/></svg>AvaSpec-ULS2048XL+-EVO<small>spectrometer</small></button>
+            <span class="flow"></span>
+            <button type="button" class="node hw" data-title="AvaSoft" data-detail="Avantes' own control software, running on the lab computer. Handles the Dark / Reference / Sample workflow &mdash; required before a spectrum becomes usable absorbance data, not optional."><svg class="node-icon"><use href="#icon-laptop"/></svg>AvaSoft<small>lab computer</small></button>
+            <span class="flow"></span>
+            <button type="button" class="node fmt" data-title="Exported file — .RAW8" data-detail="AvaSoft's native save format in Scope mode, the mode this lab actually uses. Confirmed by reading the full 139-page official AvaSoft manual, not guessed from a screenshot."><svg class="node-icon"><use href="#icon-file"/></svg>Exported file<small>.RAW8</small></button>
+            <span class="flow"></span>
+            <button type="button" class="node sync" data-title="OneDrive sync" data-detail="How a file reaches the development machine today, per the topology sequence decided in ADR 0002: develop here first, deploy to the lab laptop later."><svg class="node-icon"><use href="#icon-cloud"/></svg>OneDrive sync<small>dev machine</small></button>
+            <span class="flow"></span>
+            <button type="button" class="node sw" data-title="spectral_io.py" data-detail="The module that will parse that file into numbers Python can use. This is the plan for it &mdash; it doesn't exist as code yet."><svg class="node-icon"><use href="#icon-code"/></svg>spectral_io.py</button>
+          </div>
+        </div>
+        <div>
+          <div class="lane-label">IR / humidity channel</div>
+          <div class="lane">
+            <button type="button" class="node hw" data-title="Thorlabs PDA10CS-EC" data-detail="The IR detector reading the humidity/moisture channel &mdash; a completely separate signal path from the spectrometer, different vendor, different SDK."><svg class="node-icon"><use href="#icon-sensor"/></svg>Thorlabs PDA10CS-EC<small>IR detector</small></button>
+            <span class="flow"></span>
+            <button type="button" class="node hw" data-title="Analog Discovery 3" data-detail="The DAQ hardware that digitizes the detector's analog output, via Digilent's official WaveForms SDK."><svg class="node-icon"><use href="#icon-daq"/></svg>Analog Discovery 3<small>analog signal</small></button>
+            <span class="flow"></span>
+            <button type="button" class="node fmt" data-title="pydwf" data-detail="The pip-installable Python wrapper around Digilent's WaveForms SDK &mdash; how this channel's signal actually reaches Python."><svg class="node-icon"><use href="#icon-code"/></svg>pydwf<small>WaveForms SDK</small></button>
+            <span class="flow"></span>
+            <button type="button" class="node sw" data-title="daq_io.py" data-detail="The module that will read this channel. Also not built yet &mdash; kept deliberately separate from spectral_io.py since the two channels are on different SDKs."><svg class="node-icon"><use href="#icon-code"/></svg>daq_io.py</button>
+          </div>
+        </div>
+        <div class="converge-note">both channels converge below &mdash; which machine actually runs this step isn't settled yet</div>
+        <div class="lane" style="justify-content:center">
+          <button type="button" class="node hw" style="flex:0 0 220px" data-title="calibration/" data-detail="Temperature/pressure-dependent cross-section calibration data &mdash; the labscale measurements that make this project's approach quantitative instead of just qualitative. This is the project's own novel contribution, per the ARPA-E proposal."><svg class="node-icon"><use href="#icon-thermo"/></svg>calibration/<small>T/P calibration data</small></button>
+            <span class="flow"></span>
+          <button type="button" class="node out" style="flex:0 0 240px" data-title="deconvolution/" data-detail="The actual DOAS fit: differential absorption spectrum in, NOx / SOx / H2O concentrations out. The core algorithm work &mdash; still to be written, and still an open question whether it's built on QDOAS or from scratch (see 03)."><svg class="node-icon"><use href="#icon-funnel"/></svg>deconvolution/<small>NOx &middot; SOx &middot; H2O</small></button>
+        </div>
+        <div id="arch-detail" class="arch-detail">
+          <p class="placeholder">Click any piece above &mdash; hardware, file format, or module &mdash; for what it actually is and where it stands.</p>
+        </div>
+        <div class="legend">
+          <span><i style="background:var(--accent-strong)"></i>Hardware</span>
+          <span><i style="background:var(--amber)"></i>File / data format</span>
+          <span><i style="background:#6B7280"></i>Sync / transport</span>
+          <span><i style="background:var(--accent)"></i>Software module</span>
+          <span><i style="background:var(--green)"></i>Output</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-options" role="tabpanel" aria-labelledby="t-options" hidden>
+      <div class="card">
+        <div class="qdoas-flow" aria-hidden="true">
+          <div class="qflow-box">Measured spectrum</div><span class="qflow-arrow">&#8594;</span>
+          <div class="qflow-box accent">QDOAS fitting engine</div><span class="qflow-arrow">&#8594;</span>
+          <div class="qflow-box out">Fitted concentrations</div>
+        </div>
+        <h2 style="font-size:19px;margin-top:16px">First, what is QDOAS?</h2>
+        <p class="val" style="margin-top:6px">QDOAS is the DOAS field's reference software &mdash; maintained by BIRA-IASB (the Royal Belgian Institute for Space Aeronomy). Feed it a measured spectrum and a reference spectrum, and it fits known gas cross-sections to whatever structure is left over between the two, using a Marquardt-Levenberg non-linear least-squares fit. It's BSD-3-Clause licensed, so nothing stops this project from adapting it directly instead of starting from zero.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+          <button type="button" class="ghost-btn" id="qdoas-more-btn" aria-expanded="false" aria-controls="qdoas-more">+ More about QDOAS</button>
+          <button type="button" class="ghost-btn code" id="qdoas-code-btn" aria-expanded="false" aria-controls="qdoas-code">&lt;/&gt; See it as code</button>
+          <button type="button" class="ghost-btn license" id="qdoas-license-btn" aria-expanded="false" aria-controls="qdoas-license">&#9878; Licensing &amp; legal use</button>
+        </div>
+        <div id="qdoas-more" class="qdoas-expand" hidden>
+          <p class="val">QDOAS was built for atmospheric remote sensing &mdash; ground-based and satellite instruments staring through open sky &mdash; so it carries features this lab setup doesn't need: an air-mass-factor correction for slant viewing angles through the atmosphere, and an undersampling correction for scanning spectrometers. Neither applies to a sealed lab transmission cell, which actually simplifies what this project needs to configure. It ships both a desktop GUI and a command-line tool, <code>doas_cl</code>, driven by an XML config file &mdash; the CLI is what a Python pipeline would call.</p>
+        </div>
+        <div id="qdoas-code" class="qdoas-expand" hidden>
+          <pre><code><span class="cmt"># illustrative only — this project's own config file doesn't exist yet</span>
+$ doas_cl -c roscope_co2.xml \
+          -f data/raw/2026-09-21_sample.RAW8 \
+          -o results/2026-09-21_fit.nc
+
+<span class="cmt"># roscope_co2.xml would define:</span>
+<span class="cmt">#   - the reference / dark spectra to fit against</span>
+<span class="cmt">#   - which cross-sections to include (NO2, SO2, H2O...)</span>
+<span class="cmt">#   - the fitting wavelength window</span></code></pre>
+        </div>
+        <div id="qdoas-license" class="qdoas-expand" hidden>
+          <p class="val"><b>BSD-3-Clause</b> &mdash; one of the most permissive open-source licenses that exists, the opposite of a copyleft license like GPL. Confirmed by reading the actual <code>LICENSE</code> file in QDOAS's repository, not assumed from the word "open source."</p>
+          <p class="val" style="margin-top:8px">In practice, for this project: using QDOAS's code, porting its algorithm into Python, or calling <code>doas_cl</code> directly are all legally fine &mdash; for an academic ARPA-E project or otherwise. It does <b>not</b> force <code>roscope_co2</code> to be open-sourced in return. The only real obligations: keep the copyright notice and disclaimer if redistributing its source or binary, and never use BIRA-IASB's name to promote a derived product without written permission. Provided "as-is," no warranty.</p>
+          <p class="note-line">License holder: Royal Belgian Institute for Space Aeronomy (BIRA-IASB) and S&amp;T, 1994&ndash;2025. Read the exact text: <a href="https://github.com/UVVIS-BIRA-IASB/qdoas/blob/master/LICENSE" target="_blank" rel="noopener">LICENSE on GitHub</a>.</p>
+        </div>
+
+        <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
+          <h3 style="font-size:14px">What QDOAS actually looks like</h3>
+          <p class="val" style="margin-top:4px;margin-bottom:10px">Real screenshots &mdash; one from BIRA-IASB's own site, three read directly out of the official manual.</p>
+          <div class="qdoas-carousel">
+            <div class="carousel-frame">
+              <img id="carousel-img" src="assets/qdoas-official-site.jpg" alt="">
+            </div>
+            <div class="carousel-nav">
+              <button type="button" class="ghost-btn" id="carousel-prev" aria-label="Previous screenshot">&#8592;</button>
+              <div class="carousel-dots" id="carousel-dots"></div>
+              <button type="button" class="ghost-btn" id="carousel-next" aria-label="Next screenshot">&#8594;</button>
+            </div>
+            <p class="note-line" id="carousel-caption" style="text-align:center;border-top:none;padding-top:2px"></p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2 style="font-size:20px">Then: build on QDOAS, or write our own?</h2>
+        <p class="lede" style="margin-top:6px">QDOAS is the field's reference DOAS software &mdash; BSD-3 licensed, free to adapt. The open question is how directly to depend on it. None of these four is chosen yet.</p>
+      </div>
+      <div class="opt-grid">
+        <div class="card opt">
+          <span class="tag" style="background:var(--accent-strong)">A1</span>
+          <h3>Call doas_cl directly</h3>
+          <div class="lbl">What it means</div><div class="val">Generate config from Python, run QDOAS's CLI tool as a subprocess, parse its output.</div>
+          <div class="lbl">Advantage</div><div class="val">Reuses a mature, validated fitting engine.</div>
+          <div class="lbl">Cost</div><div class="val">External C++/Qt dependency to keep working.</div>
+        </div>
+        <div class="card opt">
+          <span class="tag" style="background:var(--accent)">A2</span>
+          <h3>Reuse QDOAS's conventions</h3>
+          <div class="lbl">What it means</div><div class="val">Adopt its reference file formats without depending on the binary.</div>
+          <div class="lbl">Advantage</div><div class="val">Reuses cross-section datasets curated by the DOAS community.</div>
+          <div class="lbl">Cost</div><div class="val">Doesn't solve the fitting engine on its own.</div>
+        </div>
+        <div class="card opt">
+          <span class="tag" style="background:var(--amber)">A3</span>
+          <h3>Port QDOAS's method</h3>
+          <div class="lbl">What it means</div><div class="val">Translate QDOAS's exact math into Python, without touching its code.</div>
+          <div class="lbl">Advantage</div><div class="val">Faithful to the method ARPA-E reviewers pointed us to.</div>
+          <div class="lbl">Cost</div><div class="val">Same writing effort as building our own.</div>
+        </div>
+        <div class="card opt" style="border-color:var(--green)">
+          <span class="tag" style="background:var(--green)">B</span>
+          <h3>Reimplement in Python</h3>
+          <div class="lbl">What it means</div><div class="val">Write the DOAS fit directly with scipy, informed by QDOAS and the literature.</div>
+          <div class="lbl">Advantage</div><div class="val">100% in the team's own language; satellite-only features can be skipped.</div>
+          <div class="lbl">Cost</div><div class="val">More upfront work to write and validate a correct fit.</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-libs" role="tabpanel" aria-labelledby="t-libs" hidden>
+      <div>
+        <h2 style="font-size:20px">Libraries and SDKs, specifically</h2>
+        <p class="lede" style="margin-top:6px">What's actually involved on each side, and which option is the one to evaluate first.</p>
+      </div>
+
+      <div class="card lib-group">
+        <h3>Core</h3>
+        <p class="plain-note">In plain terms: this is the toolbox everything else is built with. Python is the language the whole project is written in; numpy and scipy do the actual math; matplotlib draws the plots.</p>
+        <div class="lib-row"><div class="lib-name">Python 3.10+</div><div class="lib-desc">Base language &mdash; matches Avantes' own Python-wrapped interface packages and what ARPA-E reviewers expect from a QDOAS-style adaptation.</div></div>
+        <div class="lib-row"><div class="lib-name">numpy / scipy</div><div class="lib-desc"><code>scipy.optimize.least_squares</code> / <code>curve_fit</code> are the natural tools for the DOAS non-linear fit if Option B is chosen.</div></div>
+        <div class="lib-row"><div class="lib-name">matplotlib</div><div class="lib-desc">Spectrum and calibration-curve plotting during development.</div></div>
+      </div>
+
+      <div class="card lib-group">
+        <h3>Spectrometer side (AvaSpec / AvaSoft) <span class="pill">only if live control is ever needed</span></h3>
+        <p class="plain-note">In plain terms: these only matter if the software should ever reach out and pull a live reading straight from the instrument. Right now, the actual need is simpler than that &mdash; just reading files AvaSoft already saved.</p>
+        <div class="lib-row"><div class="lib-name">msl-equipment</div><div class="lib-desc">Best-maintained, best-documented Python wrapper around the Avantes DLL &mdash; first to evaluate. From the Measurement Standards Laboratory of New Zealand.</div></div>
+        <div class="lib-row"><div class="lib-name">pyava</div><div class="lib-desc">Smaller, more focused wrapper &mdash; fallback if msl-equipment falls short somewhere.</div></div>
+        <div class="lib-row"><div class="lib-name">Avantes' own samples</div><div class="lib-desc">The AvaSpec-DLL package ships official example code in Python 3.9 with PyQt5 &mdash; a third option alongside the two wrappers above.</div></div>
+      </div>
+
+      <div class="card lib-group">
+        <h3>Reading already-exported files <span class="pill">the actual current need</span></h3>
+        <p class="plain-note">In plain terms: this is the piece that actually matters today &mdash; turning a file AvaSoft already saved to disk into numbers Python can work with. Nothing here talks to the instrument itself.</p>
+        <div class="lib-row"><div class="lib-name">avaread</div><div class="lib-desc">Most promising candidate &mdash; specifically supports the AvaSoft-8.x formats (.raw8 / .rir8 / .str8) this project's lab software produces.</div></div>
+        <div class="lib-row"><div class="lib-name">pyAvantes</div><div class="lib-desc">Apache-2.0 alternative, RAW8-specific.</div></div>
+        <div class="lib-row"><div class="lib-name">lightr (R)</div><div class="lib-desc">Not Python, but the most complete reference for the binary schema if a parser has to be written from scratch.</div></div>
+      </div>
+
+      <div class="card lib-group">
+        <h3>DAQ side (Analog Discovery 3 / Thorlabs PDA10CS-EC)</h3>
+        <p class="plain-note">In plain terms: the equivalent toolbox, but for the other sensor &mdash; the one reading IR/humidity instead of UV-Vis light. Different vendor, different SDK, same basic job: turn a raw signal into numbers.</p>
+        <div class="lib-row"><div class="lib-name">pydwf</div><div class="lib-desc">pip-installable Python wrapper around Digilent's official WaveForms SDK. Fully independent acquisition channel from the spectrometer side.</div></div>
+      </div>
+
+      <div class="card lib-group">
+        <h3>If the QDOAS path is chosen (Option A1)</h3>
+        <p class="plain-note">In plain terms: only needed if the project ends up calling QDOAS directly. Its preferred output format needs its own reader to open reliably in Python.</p>
+        <div class="lib-row"><div class="lib-name">netCDF4 / xarray</div><div class="lib-desc">For reading <code>doas_cl</code>'s NetCDF output reliably &mdash; preferable to its ASCII output, which appends instead of overwriting.</div></div>
+      </div>
+
+      <div class="card">
+        <h3>File format &mdash; no longer a guess</h3>
+        <p class="val" style="margin-top:8px">For a while, this was pieced together from a screenshot and a stray forum post. It isn't anymore: the full 139-page official AvaSoft 8 manual was read cover to cover, straight from Avantes, and it says plainly that AvaSoft saves natively as <code>.RAW8</code> in the exact mode this lab uses, and exports to plain <code>.txt</code> when asked. The one thing still missing is holding an actual file the lab exported and checking nothing changed in the version they're actually running.</p>
+      </div>
+    </section>
+
+    <section id="p-hardware" role="tabpanel" aria-labelledby="t-hardware" hidden>
+      <div>
+        <h2 style="font-size:20px">The actual hardware, in the lab</h2>
+      </div>
+
+      <div class="hw-grid">
+        <div class="card hw-card">
+          <div class="hw-photo"><img src="assets/avaspec-nameplate.png" alt="AvaSpec-ULS2048XL+-EVO spectrometer nameplate"></div>
+          <h3 style="font-size:14px">AvaSpec-ULS2048XL+-EVO</h3>
+          <p class="val" style="font-size:12.5px;color:var(--ink-soft)">The UV-Vis spectrometer itself &mdash; reads directly off the nameplate.</p>
+          <div class="spec-row"><b>Serial</b><span>7618612SP</span></div>
+          <div class="spec-row"><b>Range</b><span>200&ndash;871 nm, Slit-25</span></div>
+          <div class="spec-row"><b>Power</b><span>5V/500mA or 12V/300mA</span></div>
+          <div class="dl-row"><a class="dl-link" href="assets/avaspec-datasheet.pdf" target="_blank" rel="noopener">&#8595; Datasheet (PDF)</a></div>
+        </div>
+
+        <div class="card hw-card">
+          <div class="hw-photo"><img src="assets/avalight-source.png" alt="AvaLight-DH-S-BAL light source"></div>
+          <h3 style="font-size:14px">AvaLight-DH-S-BAL</h3>
+          <p class="val" style="font-size:12.5px;color:var(--ink-soft)">The broadband light source &mdash; deuterium + halogen lamps, switched independently.</p>
+          <div class="spec-row"><b>Lamps</b><span>Deuterium &amp; Halogen</span></div>
+          <div class="spec-row"><b>Risk group</b><span>3 &mdash; UV warning</span></div>
+          <div class="spec-row"><b>Owner tag</b><span>Colorado School of Mines</span></div>
+          <div class="dl-row"><a class="dl-link" href="assets/avalight-datasheet.pdf" target="_blank" rel="noopener">&#8595; Datasheet (PDF)</a></div>
+        </div>
+
+        <div class="card hw-card">
+          <div class="hw-photo"><img src="assets/thorlabs-detector.jpg" alt="Thorlabs PDA10CS-EC IR detector"></div>
+          <h3 style="font-size:14px">Thorlabs PDA10CS-EC</h3>
+          <p class="val" style="font-size:12.5px;color:var(--ink-soft)">The IR/humidity channel's detector &mdash; a separate signal path from the spectrometer, read via the Analog Discovery 3.</p>
+          <div class="spec-row"><b>Type</b><span>InGaAs amplified detector</span></div>
+          <div class="spec-row"><b>Range</b><span>900&ndash;1700 nm</span></div>
+          <div class="spec-row"><b>Fiber input</b><span>S120-FC</span></div>
+          <div class="dl-row"><a class="dl-link" href="assets/thorlabs-manual.pdf" target="_blank" rel="noopener">&#8595; Manual (PDF)</a></div>
+        </div>
+
+        <div class="card hw-card">
+          <div class="hw-photo"><img src="assets/mfc-array.jpg" alt="Array of 5 Sensirion mass flow controllers"></div>
+          <h3 style="font-size:14px">Sensirion MFC array (&times;5)</h3>
+          <p class="val" style="font-size:12.5px;color:var(--ink-soft)">Gas-mixing manifold that doses the CO2 stream's impurities &mdash; confirmed 5 units, labels visible on 3.</p>
+          <div class="spec-row"><b>MFC1</b><span>H2O</span></div>
+          <div class="spec-row"><b>MFC2</b><span>CO2</span></div>
+          <div class="spec-row"><b>MFC3&ndash;5</b><span>SFC5500 / SFM5500, multigas</span></div>
+          <p class="note-line">No public datasheet on file &mdash; an Excel tool + Python control script already exist in the lab for dosing.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="p-avasoft" role="tabpanel" aria-labelledby="t-avasoft" hidden>
+      <div>
+        <h2 style="font-size:20px">AvaSoft, the vendor control software</h2>
+      </div>
+
+      <div class="hw-grid">
+        <div class="card hw-card">
+          <div class="hw-photo"><img src="assets/avasoft-live-spectrum.png" alt="AvaSoft live spectrum view, Scope ADC Counts vs wavelength"></div>
+          <h3 style="font-size:14px">Live view &mdash; Scope mode</h3>
+          <p class="val" style="font-size:12.5px;color:var(--ink-soft)">This is what's actually on screen during a live measurement: <b>Scope (ADC Counts) vs. wavelength</b>, 200&ndash;871 nm &mdash; not absorbance yet. Integration time, averaging, and the Dark / Reference / Sample buttons are all visible in the ribbon.</p>
+        </div>
+        <div class="card hw-card">
+          <div class="hw-photo"><img src="assets/avasoft-saved-file.png" alt="AvaSoft save confirmation dialog, Saved 1 file(s)"></div>
+          <h3 style="font-size:14px">Saving a spectrum</h3>
+          <p class="val" style="font-size:12.5px;color:var(--ink-soft)">The "Saved 1 file(s)" confirmation after a Save &mdash; this is the exact workflow that produces the <code>.RAW8</code> file this console's Architecture tab is waiting on a real copy of.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Confirmed, from the lab laptop itself</h3>
+        <div class="spec-row"><b>Version</b><span>AvaSoft 8.16 Full</span></div>
+        <div class="spec-row"><b>Native save</b><span>.RAW8 (Scope mode)</span></div>
+        <div class="spec-row"><b>ASCII export</b><span>.txt (manual step)</span></div>
+        <div class="spec-row"><b>Required workflow</b><span>Dark &rarr; Reference &rarr; Sample</span></div>
+        <p class="note-line">The Dark/Reference/Sample sequence has to run before absorbance can be computed &mdash; a raw exported spectrum is Scope data, not ready-to-use absorbance.</p>
+      </div>
+
+      <div class="card">
+        <h3>Reference documents</h3>
+        <p class="val" style="margin-top:6px;margin-bottom:10px">Both downloaded directly from Avantes, version-controlled in <code>docs/datasheets/avasoft/</code>.</p>
+        <div class="dl-row">
+          <a class="dl-link" href="assets/avasoft-manual.pdf" target="_blank" rel="noopener">&#8595; AvaSoft 8 Manual, v8.12 (PDF, 139p)</a>
+          <a class="dl-link" href="assets/avasoft-datasheet.pdf" target="_blank" rel="noopener">&#8595; AvaSoft Full datasheet (PDF)</a>
+        </div>
+      </div>
+    </section>
+
+</main>
+</div>
+
+<div class="wrap">
+  <footer>
+    <span>SCOPE CO2 &mdash; deconvolution software console</span>
+  </footer>
+</div>
+
+<script>
+(function(){
+  var tabs = document.querySelectorAll('nav.tabs button');
+  var panels = { 'p-overview':1,'p-arch':1,'p-options':1,'p-libs':1,'p-hardware':1,'p-avasoft':1 };
+  tabs.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      tabs.forEach(function(b){ b.setAttribute('aria-selected', b === btn ? 'true' : 'false'); });
+      Object.keys(panels).forEach(function(id){
+        var el = document.getElementById(id);
+        var show = (id === btn.getAttribute('aria-controls'));
+        el.hidden = !show;
+        if (show) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
+      });
+    });
+  });
+
+  /* ---- species buttons (overview) ---- */
+  var speciesBtns = document.querySelectorAll('.species-btn');
+  var speciesPanels = { nox: document.getElementById('detail-nox'), sox: document.getElementById('detail-sox'), h2o: document.getElementById('detail-h2o') };
+  var activeSpecies = null;
+  speciesBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var key = btn.getAttribute('data-species');
+      var wasActive = activeSpecies === key;
+      speciesBtns.forEach(function(b){ b.classList.remove('active'); });
+      Object.keys(speciesPanels).forEach(function(k){ speciesPanels[k].hidden = true; speciesPanels[k].classList.remove('reveal'); });
+      if (!wasActive){
+        btn.classList.add('active');
+        var p = speciesPanels[key];
+        p.hidden = false;
+        void p.offsetWidth;
+        p.classList.add('reveal');
+        activeSpecies = key;
+      } else {
+        activeSpecies = null;
+      }
+    });
+  });
+
+  /* ---- QDOAS intro expand/collapse (software path) ---- */
+  [['qdoas-more-btn','qdoas-more'], ['qdoas-code-btn','qdoas-code'], ['qdoas-license-btn','qdoas-license']].forEach(function(pair){
+    var btn = document.getElementById(pair[0]);
+    var panel = document.getElementById(pair[1]);
+    btn.addEventListener('click', function(){
+      var willShow = panel.hidden;
+      panel.hidden = !willShow;
+      btn.setAttribute('aria-expanded', String(willShow));
+      if (willShow){ void panel.offsetWidth; panel.classList.add('reveal'); }
+      else { panel.classList.remove('reveal'); }
+    });
+  });
+
+  /* ---- QDOAS interface carousel ---- */
+  var slides = [
+    { src: 'assets/qdoas-official-site.jpg', caption: 'Official QDOAS interface (BIRA-IASB site) — an O4 retrieval running against OMI (Aura) satellite data.' },
+    { src: 'assets/qdoas-main-window.jpg', caption: 'The main window, from the manual — a spectrum loaded, right-click menu for Run Analysis / Run Calibration / Browse Spectra.' },
+    { src: 'assets/qdoas-project-properties.jpg', caption: "A project's properties — where an instrument's file format, calibration, and output settings get configured." },
+    { src: 'assets/qdoas-analysis-window.jpg', caption: 'An analysis window’s molecule list — the exact kind of table where NO2, O3, O4, H2O and the Ring pseudo-cross-section get added to a fit.' }
+  ];
+  var slideIdx = 0;
+  var carImg = document.getElementById('carousel-img');
+  var carCaption = document.getElementById('carousel-caption');
+  var carDots = document.getElementById('carousel-dots');
+  if (carImg){
+    slides.forEach(function(s, i){
+      var d = document.createElement('button');
+      d.type = 'button';
+      d.setAttribute('aria-label', 'Screenshot ' + (i+1));
+      if (i === 0) d.classList.add('active');
+      d.addEventListener('click', function(){ showSlide(i); });
+      carDots.appendChild(d);
+    });
+    function showSlide(i){
+      slideIdx = (i + slides.length) % slides.length;
+      carImg.src = slides[slideIdx].src;
+      carImg.alt = slides[slideIdx].caption;
+      carCaption.textContent = slides[slideIdx].caption;
+      carDots.querySelectorAll('button').forEach(function(b, bi){ b.classList.toggle('active', bi === slideIdx); });
+    }
+    document.getElementById('carousel-prev').addEventListener('click', function(){ showSlide(slideIdx - 1); });
+    document.getElementById('carousel-next').addEventListener('click', function(){ showSlide(slideIdx + 1); });
+    showSlide(0);
+  }
+
+  /* ---- architecture: clickable nodes ---- */
+  var archNodes = document.querySelectorAll('#p-arch .node');
+  var archDetail = document.getElementById('arch-detail');
+  archNodes.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var wasActive = btn.classList.contains('is-active');
+      archNodes.forEach(function(b){ b.classList.remove('is-active'); });
+      if (wasActive){
+        archDetail.innerHTML = '<p class="placeholder">Click any piece above &mdash; hardware, file format, or module &mdash; for what it actually is and where it stands.</p>';
+        return;
+      }
+      btn.classList.add('is-active');
+      archDetail.innerHTML = '<h3 style="font-size:14px">' + btn.getAttribute('data-title') + '</h3><p class="val" style="margin-top:6px">' + btn.getAttribute('data-detail') + '</p>';
+      archDetail.classList.remove('reveal'); void archDetail.offsetWidth; archDetail.classList.add('reveal');
+    });
+  });
+
+  /* ---- animated absorption-spectrum scope ---- */
+  var canvas = document.getElementById('scopeCanvas');
+  var ctx = canvas.getContext('2d');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var dips = [ {x:0.23, depth:0.5, w:0.045, color:'#C97A2B'}, {x:0.53, depth:0.62, w:0.035, color:'#2E7D8C'}, {x:0.80, depth:0.4, w:0.06, color:'#8CA0AE'} ];
+
+  function curveY(xf, w, h){
+    var base = h*0.5;
+    var y = base;
+    dips.forEach(function(d){
+      var dx = (xf - d.x) / d.w;
+      y += d.depth * (h*0.34) * Math.exp(-(dx*dx));
+    });
+    y += Math.sin(xf*37)*1.1;
+    return y;
+  }
+
+  function size(){
+    var r = canvas.getBoundingClientRect();
+    var dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.max(1, r.width*dpr);
+    canvas.height = Math.max(1, r.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {w:r.width, h:r.height};
+  }
+
+  var dim = size();
+  window.addEventListener('resize', function(){ dim = size(); if(reduced) draw(0.62); });
+
+  function draw(scanFrac){
+    var w = dim.w, h = dim.h;
+    ctx.clearRect(0,0,w,h);
+    ctx.strokeStyle = 'rgba(140,160,174,.14)';
+    ctx.lineWidth = 1;
+    for (var i=1;i<4;i++){ var gy = h*i/4; ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke(); }
+
+    ctx.beginPath();
+    for (var px=0; px<=w; px+=2){
+      var xf = px/w;
+      var y = curveY(xf, w, h);
+      if (px===0) ctx.moveTo(px,y); else ctx.lineTo(px,y);
+    }
+    ctx.strokeStyle = '#4FA6B8';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    if (scanFrac !== null){
+      var sx = w*scanFrac;
+      var grad = ctx.createLinearGradient(sx-26,0,sx+26,0);
+      grad.addColorStop(0,'rgba(79,166,184,0)');
+      grad.addColorStop(0.5,'rgba(79,166,184,.16)');
+      grad.addColorStop(1,'rgba(79,166,184,0)');
+      ctx.fillStyle = grad;
+      ctx.fillRect(sx-26,0,52,h);
+      ctx.strokeStyle = 'rgba(220,230,236,.55)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sx,0); ctx.lineTo(sx,h); ctx.stroke();
+      var sy = curveY(scanFrac, w, h);
+      ctx.fillStyle = '#DCE6EC';
+      ctx.beginPath(); ctx.arc(sx, sy, 3, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  if (reduced){
+    draw(0.62);
+  } else {
+    var start = null, period = 5200;
+    function frame(t){
+      if (!start) start = t;
+      var f = ((t-start) % period) / period;
+      draw(f);
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+})();
+</script>
