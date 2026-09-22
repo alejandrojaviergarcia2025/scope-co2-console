@@ -58,6 +58,7 @@
 
   main{padding-block:28px 60px}
   section[role="tabpanel"]{display:flex;flex-direction:column;gap:26px}
+  section[role="tabpanel"][hidden]{display:none}
   section[role="tabpanel"].enter{animation:rise .38s cubic-bezier(.2,.7,.3,1) both}
   @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
   @media (prefers-reduced-motion: reduce){section[role="tabpanel"].enter{animation:none}}
@@ -78,6 +79,7 @@
   .species-btn.h2o.active{color:#5C7280;box-shadow:0 0 0 2px rgba(140,160,174,.25)}
   .species-btn .hint{color:var(--ink-soft);font-weight:400}
   .species-panel{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+  .species-panel[hidden]{display:none}
   .species-panel.reveal{animation:rise .32s cubic-bezier(.2,.7,.3,1) both}
   @media (prefers-reduced-motion: reduce){.species-panel.reveal{animation:none}}
   .species-mol{flex:0 0 150px}
