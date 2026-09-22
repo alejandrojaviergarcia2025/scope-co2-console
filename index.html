@@ -114,7 +114,9 @@
   .carousel-dots button.active{background:var(--accent)}
 
   /* plain-language notes (libraries) */
-  .plain-note{background:var(--surface-2);border-left:3px solid var(--accent);border-radius:6px;padding:9px 13px;font-size:12.5px;color:var(--accent-strong);line-height:1.55;margin-bottom:4px}
+  .plain-note{background:#FFF6D6;border-left:3px solid #E8C547;border-radius:6px;padding:9px 13px;font-size:12.5px;color:#6B5900;line-height:1.55;margin-bottom:4px}
+  @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .plain-note{background:#3A3320;border-left-color:#D9B94A;color:#F0DE9E}}
+  :root[data-theme="dark"] .plain-note{background:#3A3320;border-left-color:#D9B94A;color:#F0DE9E}
 
   /* architecture */
   .lane-label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
@@ -242,7 +244,7 @@
     <section id="p-overview" role="tabpanel" aria-labelledby="t-overview" class="enter">
       <div>
         <h2 style="font-size:19px">Look closer: the three species this instrument targets</h2>
-        <p class="lede" style="margin-top:6px">Click one to see its structure and why it matters to CO2-stream purity. Their position on the spectrum above is illustrative — this project hasn't pinned down yet exactly where each one's absorption band sits in the 200&ndash;871&nbsp;nm range, which is precisely the kind of gap this console is meant to surface, not hide.</p>
+        <p class="lede" style="margin-top:6px">Click one to see its structure and why it matters to CO2-stream purity.</p>
       </div>
       <div class="species-row">
         <button type="button" class="species-btn nox" data-species="nox"><i style="background:var(--amber)"></i>NOx<span class="hint">nitrogen oxides</span></button>
@@ -428,7 +430,7 @@ $ doas_cl -c roscope_co2.xml \
 
       <div class="card lib-group">
         <h3>Core</h3>
-        <p class="plain-note">In plain terms: this is the toolbox everything else is built with. Python is the language the whole project is written in; numpy and scipy do the actual math; matplotlib draws the plots.</p>
+        <p class="plain-note">This is the toolbox everything else is built with. Python is the language the whole project is written in; numpy and scipy do the actual math; matplotlib draws the plots.</p>
         <div class="lib-row"><div class="lib-name">Python 3.10+</div><div class="lib-desc">Base language &mdash; matches Avantes' own Python-wrapped interface packages and what ARPA-E reviewers expect from a QDOAS-style adaptation.</div></div>
         <div class="lib-row"><div class="lib-name">numpy / scipy</div><div class="lib-desc"><code>scipy.optimize.least_squares</code> / <code>curve_fit</code> are the natural tools for the DOAS non-linear fit if Option B is chosen.</div></div>
         <div class="lib-row"><div class="lib-name">matplotlib</div><div class="lib-desc">Spectrum and calibration-curve plotting during development.</div></div>
@@ -436,7 +438,7 @@ $ doas_cl -c roscope_co2.xml \
 
       <div class="card lib-group">
         <h3>Spectrometer side (AvaSpec / AvaSoft) <span class="pill">only if live control is ever needed</span></h3>
-        <p class="plain-note">In plain terms: these only matter if the software should ever reach out and pull a live reading straight from the instrument. Right now, the actual need is simpler than that &mdash; just reading files AvaSoft already saved.</p>
+        <p class="plain-note">These only matter if the software should ever reach out and pull a live reading straight from the instrument. Right now, the actual need is simpler than that &mdash; just reading files AvaSoft already saved.</p>
         <div class="lib-row"><div class="lib-name">msl-equipment</div><div class="lib-desc">Best-maintained, best-documented Python wrapper around the Avantes DLL &mdash; first to evaluate. From the Measurement Standards Laboratory of New Zealand.</div></div>
         <div class="lib-row"><div class="lib-name">pyava</div><div class="lib-desc">Smaller, more focused wrapper &mdash; fallback if msl-equipment falls short somewhere.</div></div>
         <div class="lib-row"><div class="lib-name">Avantes' own samples</div><div class="lib-desc">The AvaSpec-DLL package ships official example code in Python 3.9 with PyQt5 &mdash; a third option alongside the two wrappers above.</div></div>
@@ -444,7 +446,7 @@ $ doas_cl -c roscope_co2.xml \
 
       <div class="card lib-group">
         <h3>Reading already-exported files <span class="pill">the actual current need</span></h3>
-        <p class="plain-note">In plain terms: this is the piece that actually matters today &mdash; turning a file AvaSoft already saved to disk into numbers Python can work with. Nothing here talks to the instrument itself.</p>
+        <p class="plain-note">This is the piece that actually matters today &mdash; turning a file AvaSoft already saved to disk into numbers Python can work with. Nothing here talks to the instrument itself.</p>
         <div class="lib-row"><div class="lib-name">avaread</div><div class="lib-desc">Most promising candidate &mdash; specifically supports the AvaSoft-8.x formats (.raw8 / .rir8 / .str8) this project's lab software produces.</div></div>
         <div class="lib-row"><div class="lib-name">pyAvantes</div><div class="lib-desc">Apache-2.0 alternative, RAW8-specific.</div></div>
         <div class="lib-row"><div class="lib-name">lightr (R)</div><div class="lib-desc">Not Python, but the most complete reference for the binary schema if a parser has to be written from scratch.</div></div>
@@ -452,20 +454,16 @@ $ doas_cl -c roscope_co2.xml \
 
       <div class="card lib-group">
         <h3>DAQ side (Analog Discovery 3 / Thorlabs PDA10CS-EC)</h3>
-        <p class="plain-note">In plain terms: the equivalent toolbox, but for the other sensor &mdash; the one reading IR/humidity instead of UV-Vis light. Different vendor, different SDK, same basic job: turn a raw signal into numbers.</p>
+        <p class="plain-note">The equivalent toolbox, but for the other sensor &mdash; the one reading IR/humidity instead of UV-Vis light. Different vendor, different SDK, same basic job: turn a raw signal into numbers.</p>
         <div class="lib-row"><div class="lib-name">pydwf</div><div class="lib-desc">pip-installable Python wrapper around Digilent's official WaveForms SDK. Fully independent acquisition channel from the spectrometer side.</div></div>
       </div>
 
       <div class="card lib-group">
         <h3>If the QDOAS path is chosen (Option A1)</h3>
-        <p class="plain-note">In plain terms: only needed if the project ends up calling QDOAS directly. Its preferred output format needs its own reader to open reliably in Python.</p>
+        <p class="plain-note">Only needed if the project ends up calling QDOAS directly. Its preferred output format needs its own reader to open reliably in Python.</p>
         <div class="lib-row"><div class="lib-name">netCDF4 / xarray</div><div class="lib-desc">For reading <code>doas_cl</code>'s NetCDF output reliably &mdash; preferable to its ASCII output, which appends instead of overwriting.</div></div>
       </div>
 
-      <div class="card">
-        <h3>File format &mdash; no longer a guess</h3>
-        <p class="val" style="margin-top:8px">For a while, this was pieced together from a screenshot and a stray forum post. It isn't anymore: the full 139-page official AvaSoft 8 manual was read cover to cover, straight from Avantes, and it says plainly that AvaSoft saves natively as <code>.RAW8</code> in the exact mode this lab uses, and exports to plain <code>.txt</code> when asked. The one thing still missing is holding an actual file the lab exported and checking nothing changed in the version they're actually running.</p>
-      </div>
     </section>
 
     <section id="p-hardware" role="tabpanel" aria-labelledby="t-hardware" hidden>
