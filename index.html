@@ -79,6 +79,7 @@
   .species-btn.active{border-color:currentColor}
   .species-btn.nox.active{color:var(--amber);box-shadow:0 0 0 2px rgba(201,122,43,.22)}
   .species-btn.sox.active{color:var(--accent);box-shadow:0 0 0 2px rgba(46,125,140,.22)}
+  .species-btn.o2.active{color:#5B8DBE;box-shadow:0 0 0 2px rgba(91,141,190,.25)}
   .species-btn.h2o.active{color:#5C7280;box-shadow:0 0 0 2px rgba(140,160,174,.25)}
   .species-btn .hint{color:var(--ink-soft);font-weight:400}
   .species-panel{display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
@@ -216,13 +217,14 @@
       <div>TECHNIQUE <b>DOAS</b></div>
       <div>RANGE <b>200&ndash;871 nm</b></div>
       <div>INSTRUMENT <b>AvaSpec-ULS2048XL+-EVO</b></div>
-      <div>TARGETS <b>NOx &middot; SOx &middot; H2O</b></div>
+      <div>TARGETS <b>NOx &middot; SOx &middot; O2 &middot; H2O</b></div>
     </div>
     <div class="scope">
       <canvas id="scopeCanvas" aria-hidden="true"></canvas>
       <div class="scope-tag" style="left:23%"><i style="background:var(--amber)"></i>NOx</div>
       <div class="scope-tag" style="left:53%"><i style="background:var(--accent)"></i>SOx</div>
-      <div class="scope-tag" style="left:80%"><i style="background:#8CA0AE"></i>H2O</div>
+      <div class="scope-tag" style="left:68%"><i style="background:#5B8DBE"></i>O2</div>
+      <div class="scope-tag" style="left:88%"><i style="background:#8CA0AE"></i>H2O</div>
     </div>
     <div class="spectrum-bar" role="img" aria-label="Wavelength range of the AvaSpec spectrometer, 200 to 871 nanometers"></div>
     <div class="spectrum-ticks"><span>200 nm</span><span>400 nm</span><span>600 nm</span><span>871 nm</span></div>
@@ -246,12 +248,13 @@
 <main>
     <section id="p-overview" role="tabpanel" aria-labelledby="t-overview" class="enter">
       <div>
-        <h2 style="font-size:19px">Look closer: the three species this instrument targets</h2>
-        <p class="lede" style="margin-top:6px">Click one to see its structure and why it matters to CO2-stream purity.</p>
+        <h2 style="font-size:19px">Look closer: the four species this instrument targets</h2>
+        <p class="lede" style="margin-top:6px">Click one to see its structure and why it matters to CO2-stream purity. O2 was added to scope 2026-10-13 &mdash; it was missing from this page before that.</p>
       </div>
       <div class="species-row">
         <button type="button" class="species-btn nox" data-species="nox"><i style="background:var(--amber)"></i>NOx<span class="hint">nitrogen oxides</span></button>
         <button type="button" class="species-btn sox" data-species="sox"><i style="background:var(--accent)"></i>SOx<span class="hint">sulfur oxides</span></button>
+        <button type="button" class="species-btn o2" data-species="o2"><i style="background:#5B8DBE"></i>O2<span class="hint">oxygen</span></button>
         <button type="button" class="species-btn h2o" data-species="h2o"><i style="background:#8CA0AE"></i>H2O<span class="hint">water vapor</span></button>
       </div>
 
@@ -261,8 +264,8 @@
         </div>
         <div class="species-text">
           <span class="formula-badge" style="background:var(--amber)">NO &middot; NO&#8322;</span>
-          <p class="val">One of the three species this software has to pull out of the differential absorption spectrum, per the project's own goal statement. NOx typically shows up as a byproduct of combustion or upstream process chemistry, riding along in the CO2 stream being monitored.</p>
-          <p class="note-line">Marked at ~23% of the scope trace above for illustration only &mdash; the real band position isn't confirmed yet.</p>
+          <p class="val">One of the four species this software has to pull out of the differential absorption spectrum, per the project's own goal statement. NOx typically shows up as a byproduct of combustion or upstream process chemistry, riding along in the CO2 stream being monitored.</p>
+          <p class="note-line">Literature search (2026-10-03, extended 2026-10-13) points to 400&ndash;500 nm as the visible structure DOAS actually fits for NO2 (Vandaele et al. 1998, Bogumil et al. 2003, Coquart et al. 1995 &mdash; three convergent sources). Metadata-level only: no PDF fully read yet, no lab temperature chosen. See <code>docs/huellas-absorcion-no2-so2-h2o.md</code>.</p>
         </div>
       </div>
       <div id="detail-sox" class="card species-panel" hidden>
@@ -272,7 +275,17 @@
         <div class="species-text">
           <span class="formula-badge" style="background:var(--accent)">SO&#8322;</span>
           <p class="val">The second target species. SOx generally traces back to sulfur-containing feedstock or contamination further up the process &mdash; a signature worth catching before it travels downstream with the CO2.</p>
-          <p class="note-line">Marked at ~53% of the scope trace above for illustration only &mdash; the real band position isn't confirmed yet.</p>
+          <p class="note-line">Literature points to 227&ndash;420 nm (strong 227&ndash;345 nm, weaker 345&ndash;420 nm &mdash; Vandaele, Hermans &amp; Fally 2009, Hermans, Vandaele &amp; Fally 2009, Bogumil et al. 2003). Metadata-level only, same caveat as NOx: see <code>docs/huellas-absorcion-no2-so2-h2o.md</code>.</p>
+        </div>
+      </div>
+      <div id="detail-o2" class="card species-panel" hidden>
+        <div class="species-mol" aria-hidden="true">
+          <svg viewBox="0 0 150 110"><line x1="56" y1="55" x2="94" y2="55" stroke="#8B93A0" stroke-width="5"/><circle cx="56" cy="55" r="15" fill="#5B8DBE"/><circle cx="94" cy="55" r="15" fill="#5B8DBE"/><text x="56" y="60" text-anchor="middle" font-family="monospace" font-size="12" fill="#fff">O</text><text x="94" y="60" text-anchor="middle" font-family="monospace" font-size="12" fill="#fff">O</text></svg>
+        </div>
+        <div class="species-text">
+          <span class="formula-badge" style="background:#5B8DBE">O&#8322;</span>
+          <p class="val">Added to the project's scope 2026-10-13 &mdash; not researched before that date. Four candidate bands sit inside the AvaSpec's 200&ndash;871.5&nbsp;nm range: the Herzberg continuum (~200&ndash;245 nm), the A-band (~759&ndash;772 nm, the strongest and the classic remote-sensing "oxygen A-band"), the B-band (~682&ndash;694 nm), and a weak gamma band (~627&ndash;634 nm).</p>
+          <p class="note-line"><b>Caveat:</b> the gamma band is mostly the collisional O2&ndash;O2 complex (Naus &amp; Ubachs 1999), whose strength scales with the <i>square</i> of O2 density &mdash; as a trace gas in a CO2 matrix it may be undetectable in practice even though it shows up in 21%-O2 atmospheric literature. No reference cross-section file chosen yet. See <code>docs/huellas-absorcion-no2-so2-h2o.md</code>.</p>
         </div>
       </div>
       <div id="detail-h2o" class="card species-panel" hidden>
@@ -281,8 +294,8 @@
         </div>
         <div class="species-text">
           <span class="formula-badge" style="background:#5C7280">H&#8322;O</span>
-          <p class="val">Residual moisture in the CO2 stream &mdash; a target in its own right, and also a complication: water vapor's own absorption structure can overlap with NOx and SOx features, which is part of why the fit needs to separate all three at once rather than one at a time.</p>
-          <p class="note-line">Marked at ~80% of the scope trace above for illustration only &mdash; the real band position isn't confirmed yet.</p>
+          <p class="val">Residual moisture in the CO2 stream &mdash; a target in its own right, and also a complication: water vapor's own absorption structure can overlap with NOx, SOx and O2 features, which is part of why the fit needs to separate species at once rather than one at a time.</p>
+          <p class="note-line">Only weak bands fall inside the AvaSpec's range (~720&ndash;730 nm and ~820 nm) &mdash; the strong H2O bands (940/1130/1370/1450 nm) are outside it, in the Thorlabs PDA10CS-EC's 900&ndash;1700 nm range instead. That's why the IR channel, not the UV-Vis spectrometer, is the better-suited detector for humidity. Metadata-level citations only: see <code>docs/huellas-absorcion-no2-so2-h2o.md</code>.</p>
         </div>
       </div>
     </section>
@@ -290,7 +303,7 @@
     <section id="p-arch" role="tabpanel" aria-labelledby="t-arch" hidden>
       <div>
         <h2 style="font-size:20px">How the pieces would connect</h2>
-        <p class="lede" style="margin-top:6px">Two independent acquisition channels, on two different vendor SDKs, both feeding the same calibration and deconvolution logic. Click any piece for what it actually is. This is the current working plan &mdash; none of the software boxes below exist as code yet.</p>
+        <p class="lede" style="margin-top:6px">Two independent acquisition channels, on two different vendor SDKs, both feeding the same calibration and deconvolution logic. Click any piece for what it actually is. Updated 2026-10-19: spectral_io.py and daq_io.py are implemented and tested against real hardware &mdash; this page no longer shows only a plan. Other boxes may still describe earlier status; click through rather than assuming.</p>
       </div>
       <div class="card" style="display:flex;flex-direction:column;gap:16px">
         <div>
@@ -300,11 +313,11 @@
             <span class="flow"></span>
             <button type="button" class="node hw" data-title="AvaSoft" data-detail="Avantes' own control software, running on the lab computer. Handles the Dark / Reference / Sample workflow &mdash; required before a spectrum becomes usable absorbance data, not optional."><svg class="node-icon"><use href="#icon-laptop"/></svg>AvaSoft<small>lab computer</small></button>
             <span class="flow"></span>
-            <button type="button" class="node fmt" data-title="Exported file — .RAW8" data-detail="AvaSoft's native save format in Scope mode, the mode this lab actually uses. Confirmed by reading the full 139-page official AvaSoft manual, not guessed from a screenshot."><svg class="node-icon"><use href="#icon-file"/></svg>Exported file<small>.RAW8</small></button>
+            <button type="button" class="node fmt" data-title="Exported file — .txt / .RAW8" data-detail="AvaSoft's Scope-mode export, in either of the two formats it actually produces: the ASCII .txt (the first format this project implemented) or the native binary .RAW8 (added 2026-10-18). Both are confirmed against real lab files, not just the manual."><svg class="node-icon"><use href="#icon-file"/></svg>Exported file<small>.txt / .RAW8</small></button>
             <span class="flow"></span>
-            <button type="button" class="node sync" data-title="OneDrive sync" data-detail="How a file reaches the development machine today, per the topology sequence decided in ADR 0002: develop here first, deploy to the lab laptop later."><svg class="node-icon"><use href="#icon-cloud"/></svg>OneDrive sync<small>dev machine</small></button>
+            <button type="button" class="node sync" data-title="OneDrive sync (dev-phase only, not decided)" data-detail="A development-only workaround, not a settled part of the architecture: the exact mechanism for getting a file from the lab machine to the dev machine (OneDrive or something else) is still an open blocker per ADR 0002. It disappears entirely once the software deploys to the lab laptop (ADR 0002's end state) &mdash; running there, AvaSoft's exported files are already local, so there is no sync step in production."><svg class="node-icon"><use href="#icon-cloud"/></svg>OneDrive sync<small>dev machine, unsettled</small></button>
             <span class="flow"></span>
-            <button type="button" class="node sw" data-title="spectral_io.py" data-detail="The module that will parse that file into numbers Python can use. This is the plan for it &mdash; it doesn't exist as code yet."><svg class="node-icon"><use href="#icon-code"/></svg>spectral_io.py</button>
+            <button type="button" class="node sw" data-title="spectral_io.py" data-detail="Implemented and tested against real lab files: reads both AvaSoft's ASCII .txt Scope-mode export and the native .RAW8 binary, producing the same AvaSpecSpectrum data regardless of which format was read."><svg class="node-icon"><use href="#icon-code"/></svg>spectral_io.py</button>
           </div>
         </div>
         <div>
@@ -316,14 +329,14 @@
             <span class="flow"></span>
             <button type="button" class="node fmt" data-title="pydwf" data-detail="The pip-installable Python wrapper around Digilent's WaveForms SDK &mdash; how this channel's signal actually reaches Python."><svg class="node-icon"><use href="#icon-code"/></svg>pydwf<small>WaveForms SDK</small></button>
             <span class="flow"></span>
-            <button type="button" class="node sw" data-title="daq_io.py" data-detail="The module that will read this channel. Also not built yet &mdash; kept deliberately separate from spectral_io.py since the two channels are on different SDKs."><svg class="node-icon"><use href="#icon-code"/></svg>daq_io.py</button>
+            <button type="button" class="node sw" data-title="daq_io.py" data-detail="Implemented. Open/configure/read/close confirmed 2026-10-19 against a real Analog Discovery 3 (serial 210415BD57BA) &mdash; enumerate-then-open in the same call, and always read back the actually-applied channel range rather than trust the request, were both real findings from that test. No PDA10CS-EC signal tested yet (the detector itself is lab equipment)."><svg class="node-icon"><use href="#icon-code"/></svg>daq_io.py</button>
           </div>
         </div>
-        <div class="converge-note">both channels converge below &mdash; which machine actually runs this step isn't settled yet</div>
+        <div class="converge-note">both channels are confirmed to run on the same computer (2026-10-19) and are read at different times, not simultaneously &mdash; no clock-sync problem to solve for this project</div>
         <div class="lane" style="justify-content:center">
-          <button type="button" class="node hw" style="flex:0 0 220px" data-title="calibration/" data-detail="Temperature/pressure-dependent cross-section calibration data &mdash; the labscale measurements that make this project's approach quantitative instead of just qualitative. This is the project's own novel contribution, per the ARPA-E proposal."><svg class="node-icon"><use href="#icon-thermo"/></svg>calibration/<small>T/P calibration data</small></button>
+          <button type="button" class="node hw" style="flex:0 0 220px" data-title="calibration/" data-detail="Temperature/pressure-dependent cross-section calibration data &mdash; the labscale measurements that make this project's approach quantitative instead of just qualitative. This is the project's own novel contribution, per the ARPA-E proposal. Still open: no lab calibration campaign data exists yet, and the storage format isn't finalized."><svg class="node-icon"><use href="#icon-thermo"/></svg>calibration/<small>T/P calibration data</small></button>
             <span class="flow"></span>
-          <button type="button" class="node out" style="flex:0 0 240px" data-title="deconvolution/" data-detail="The actual DOAS fit: differential absorption spectrum in, NOx / SOx / H2O concentrations out. The core algorithm work &mdash; still to be written, and still an open question whether it's built on QDOAS or from scratch (see 03)."><svg class="node-icon"><use href="#icon-funnel"/></svg>deconvolution/<small>NOx &middot; SOx &middot; H2O</small></button>
+          <button type="button" class="node out" style="flex:0 0 240px" data-title="deconvolution/" data-detail="The DOAS fit: optical density in, NOx / SOx / O2 / H2O concentrations out. Decided 2026-09-22 (ADR 0004): reimplemented in Python as an explicit, cited port of QDOAS's method, not a call to QDOAS itself. The v1 linear least-squares fit is implemented (ADR 0005); wavelength shift/stretch is the next milestone, not yet built."><svg class="node-icon"><use href="#icon-funnel"/></svg>deconvolution/<small>NOx &middot; SOx &middot; O2 &middot; H2O</small></button>
         </div>
         <div id="arch-detail" class="arch-detail">
           <p class="placeholder">Click any piece above &mdash; hardware, file format, or module &mdash; for what it actually is and where it stands.</p>
@@ -356,14 +369,15 @@
           <p class="val">QDOAS was built for atmospheric remote sensing &mdash; ground-based and satellite instruments staring through open sky &mdash; so it carries features this lab setup doesn't need: an air-mass-factor correction for slant viewing angles through the atmosphere, and an undersampling correction for scanning spectrometers. Neither applies to a sealed lab transmission cell, which actually simplifies what this project needs to configure. It ships both a desktop GUI and a command-line tool, <code>doas_cl</code>, driven by an XML config file &mdash; the CLI is what a Python pipeline would call.</p>
         </div>
         <div id="qdoas-code" class="qdoas-expand" hidden>
-          <pre><code><span class="cmt"># illustrative only — this project's own config file doesn't exist yet</span>
+          <p class="note-line" style="margin-bottom:8px">This is what calling <code>doas_cl</code> directly (Option A1, below) would have looked like &mdash; <b>not the path chosen.</b> The project reimplements this same method natively in Python instead (Option B, decided 2026-09-22); <code>doas_cl</code> stays available only as an optional dev-time cross-check, never a production dependency.</p>
+          <pre><code><span class="cmt"># illustrative, Option A1 (not chosen) — for comparison only</span>
 $ doas_cl -c roscope_co2.xml \
           -f data/raw/2026-09-21_sample.RAW8 \
           -o results/2026-09-21_fit.nc
 
 <span class="cmt"># roscope_co2.xml would define:</span>
 <span class="cmt">#   - the reference / dark spectra to fit against</span>
-<span class="cmt">#   - which cross-sections to include (NO2, SO2, H2O...)</span>
+<span class="cmt">#   - which cross-sections to include (NO2, SO2, O2, H2O...)</span>
 <span class="cmt">#   - the fitting wavelength window</span></code></pre>
         </div>
         <div id="qdoas-license" class="qdoas-expand" hidden>
@@ -391,7 +405,7 @@ $ doas_cl -c roscope_co2.xml \
 
       <div>
         <h2 style="font-size:20px">Then: build on QDOAS, or write our own?</h2>
-        <p class="lede" style="margin-top:6px">QDOAS is the field's reference DOAS software &mdash; BSD-3 licensed, free to adapt. The open question is how directly to depend on it. None of these four is chosen yet.</p>
+        <p class="lede" style="margin-top:6px">QDOAS is the field's reference DOAS software &mdash; BSD-3 licensed, free to adapt. <b>Decided 2026-09-22 (ADR 0004): Option B</b>, reimplement in Python as an explicit, cited port of QDOAS's method. The other three stay below for the record of how the decision was reached.</p>
       </div>
       <div class="opt-grid">
         <div class="card opt">
@@ -400,6 +414,7 @@ $ doas_cl -c roscope_co2.xml \
           <div class="lbl">What it means</div><div class="val">Generate config from Python, run QDOAS's CLI tool as a subprocess, parse its output.</div>
           <div class="lbl">Advantage</div><div class="val">Reuses a mature, validated fitting engine.</div>
           <div class="lbl">Cost</div><div class="val">External C++/Qt dependency to keep working.</div>
+          <div class="lbl">Outcome</div><div class="val">Not chosen &mdash; <code>doas_cl</code> stays available only as an optional dev-time cross-check.</div>
         </div>
         <div class="card opt">
           <span class="tag" style="background:var(--accent)">A2</span>
@@ -407,6 +422,7 @@ $ doas_cl -c roscope_co2.xml \
           <div class="lbl">What it means</div><div class="val">Adopt its reference file formats without depending on the binary.</div>
           <div class="lbl">Advantage</div><div class="val">Reuses cross-section datasets curated by the DOAS community.</div>
           <div class="lbl">Cost</div><div class="val">Doesn't solve the fitting engine on its own.</div>
+          <div class="lbl">Outcome</div><div class="val">Adopted anyway, alongside B &mdash; low-cost regardless of which fitting-engine option won.</div>
         </div>
         <div class="card opt">
           <span class="tag" style="background:var(--amber)">A3</span>
@@ -414,13 +430,14 @@ $ doas_cl -c roscope_co2.xml \
           <div class="lbl">What it means</div><div class="val">Translate QDOAS's exact math into Python, without touching its code.</div>
           <div class="lbl">Advantage</div><div class="val">Faithful to the method ARPA-E reviewers pointed us to.</div>
           <div class="lbl">Cost</div><div class="val">Same writing effort as building our own.</div>
+          <div class="lbl">Outcome</div><div class="val">This is effectively what B became &mdash; A3 and B converged into one decision.</div>
         </div>
         <div class="card opt" style="border-color:var(--green)">
-          <span class="tag" style="background:var(--green)">B</span>
+          <span class="tag" style="background:var(--green)">B &middot; DECIDED</span>
           <h3>Reimplement in Python</h3>
-          <div class="lbl">What it means</div><div class="val">Write the DOAS fit directly with scipy, informed by QDOAS and the literature.</div>
-          <div class="lbl">Advantage</div><div class="val">100% in the team's own language; satellite-only features can be skipped.</div>
-          <div class="lbl">Cost</div><div class="val">More upfront work to write and validate a correct fit.</div>
+          <div class="lbl">What it means</div><div class="val">Write the DOAS fit directly with scipy, informed by QDOAS and the literature, citing it explicitly rather than reinventing from scratch.</div>
+          <div class="lbl">Advantage</div><div class="val">100% in the team's own language; satellite-only features (Ring effect, I0 correction, AMF, undersampling) confirmed not applicable to this lab setup and skipped.</div>
+          <div class="lbl">Cost</div><div class="val">Real, ongoing work for deconvolution-dev: the v1 linear fit is implemented (ADR 0005), wavelength shift/stretch is the next milestone.</div>
         </div>
       </div>
     </section>
@@ -448,11 +465,11 @@ $ doas_cl -c roscope_co2.xml \
       </div>
 
       <div class="card lib-group">
-        <h3>Reading already-exported files <span class="pill">the actual current need</span></h3>
-        <p class="plain-note">This is the piece that actually matters today &mdash; turning a file AvaSoft already saved to disk into numbers Python can work with. Nothing here talks to the instrument itself.</p>
-        <div class="lib-row"><div class="lib-name">avaread</div><div class="lib-desc">Most promising candidate &mdash; specifically supports the AvaSoft-8.x formats (.raw8 / .rir8 / .str8) this project's lab software produces.</div></div>
-        <div class="lib-row"><div class="lib-name">pyAvantes</div><div class="lib-desc">Apache-2.0 alternative, RAW8-specific.</div></div>
-        <div class="lib-row"><div class="lib-name">lightr (R)</div><div class="lib-desc">Not Python, but the most complete reference for the binary schema if a parser has to be written from scratch.</div></div>
+        <h3>Reading already-exported files <span class="pill">done &mdash; spectral_io.py</span></h3>
+        <p class="plain-note">Decided 2026-09-22: none of the three libraries below were adopted. The project wrote its own parser (spectral_io.py), confirmed byte-for-byte and column-for-column against real lab files rather than trusting a third-party library's assumptions. Kept here for the record of what was evaluated.</p>
+        <div class="lib-row"><div class="lib-name">avaread</div><div class="lib-desc">Was the most promising candidate &mdash; specifically supports the AvaSoft-8.x formats (.raw8 / .rir8 / .str8) &mdash; but not adopted; this project's own parser covers both .txt and .RAW8 directly.</div></div>
+        <div class="lib-row"><div class="lib-name">pyAvantes</div><div class="lib-desc">Apache-2.0 alternative, RAW8-specific. Not adopted.</div></div>
+        <div class="lib-row"><div class="lib-name">lightr (R)</div><div class="lib-desc">Not Python, so never a dependency &mdash; but used as a real research reference for the binary schema while writing spectral_io.py's own .RAW8 reader.</div></div>
       </div>
 
       <div class="card lib-group">
@@ -462,8 +479,8 @@ $ doas_cl -c roscope_co2.xml \
       </div>
 
       <div class="card lib-group">
-        <h3>If the QDOAS path is chosen (Option A1)</h3>
-        <p class="plain-note">Only needed if the project ends up calling QDOAS directly. Its preferred output format needs its own reader to open reliably in Python.</p>
+        <h3>Only for the optional doas_cl cross-check <span class="pill">Option A1 not chosen</span></h3>
+        <p class="plain-note">Option A1 (calling QDOAS directly) wasn't chosen &mdash; see 03. This library only matters if someone runs <code>doas_cl</code> as a one-off dev-time check against this project's own Python result, not for production.</p>
         <div class="lib-row"><div class="lib-name">netCDF4 / xarray</div><div class="lib-desc">For reading <code>doas_cl</code>'s NetCDF output reliably &mdash; preferable to its ASCII output, which appends instead of overwriting.</div></div>
       </div>
 
@@ -531,7 +548,7 @@ $ doas_cl -c roscope_co2.xml \
         <div class="card hw-card">
           <div class="hw-photo"><img src="assets/avasoft-saved-file.png" alt="AvaSoft save confirmation dialog, Saved 1 file(s)"></div>
           <h3 style="font-size:14px">Saving a spectrum</h3>
-          <p class="val" style="font-size:12.5px;color:var(--ink-soft)">The "Saved 1 file(s)" confirmation after a Save &mdash; this is the exact workflow that produces the <code>.RAW8</code> file this console's Architecture tab is waiting on a real copy of.</p>
+          <p class="val" style="font-size:12.5px;color:var(--ink-soft)">The "Saved 1 file(s)" confirmation after a Save &mdash; this is the exact workflow that produces the <code>.RAW8</code> file. Real copies of both <code>.txt</code> and <code>.RAW8</code> exports have since been retrieved from the lab machine and are read successfully by spectral_io.py (confirmed 2026-09-22, binary reader added 2026-10-18).</p>
         </div>
       </div>
 
@@ -581,7 +598,7 @@ $ doas_cl -c roscope_co2.xml \
 
   /* ---- species buttons (overview) ---- */
   var speciesBtns = document.querySelectorAll('.species-btn');
-  var speciesPanels = { nox: document.getElementById('detail-nox'), sox: document.getElementById('detail-sox'), h2o: document.getElementById('detail-h2o') };
+  var speciesPanels = { nox: document.getElementById('detail-nox'), sox: document.getElementById('detail-sox'), o2: document.getElementById('detail-o2'), h2o: document.getElementById('detail-h2o') };
   var activeSpecies = null;
   speciesBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
@@ -668,7 +685,7 @@ $ doas_cl -c roscope_co2.xml \
   var canvas = document.getElementById('scopeCanvas');
   var ctx = canvas.getContext('2d');
   var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var dips = [ {x:0.23, depth:0.5, w:0.045, color:'#C97A2B'}, {x:0.53, depth:0.62, w:0.035, color:'#2E7D8C'}, {x:0.80, depth:0.4, w:0.06, color:'#8CA0AE'} ];
+  var dips = [ {x:0.23, depth:0.5, w:0.045, color:'#C97A2B'}, {x:0.53, depth:0.62, w:0.035, color:'#2E7D8C'}, {x:0.68, depth:0.3, w:0.025, color:'#5B8DBE'}, {x:0.88, depth:0.4, w:0.06, color:'#8CA0AE'} ];
 
   function curveY(xf, w, h){
     var base = h*0.5;
