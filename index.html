@@ -248,13 +248,12 @@
 <main>
     <section id="p-overview" role="tabpanel" aria-labelledby="t-overview" class="enter">
       <div>
-        <h2 style="font-size:19px">Look closer: the four species this instrument targets</h2>
-        <p class="lede" style="margin-top:6px">Click one to see its structure and why it matters to CO2-stream purity. O2 was added to scope 2026-10-13 &mdash; it was missing from this page before that.</p>
+        <h2 style="font-size:19px">Look closer: the three species this instrument targets</h2>
+        <p class="lede" style="margin-top:6px">Click one to see its structure and why it matters to CO2-stream purity.</p>
       </div>
       <div class="species-row">
         <button type="button" class="species-btn nox" data-species="nox"><i style="background:var(--amber)"></i>NOx<span class="hint">nitrogen oxides</span></button>
         <button type="button" class="species-btn sox" data-species="sox"><i style="background:var(--accent)"></i>SOx<span class="hint">sulfur oxides</span></button>
-        <button type="button" class="species-btn o2" data-species="o2"><i style="background:#5B8DBE"></i>O2<span class="hint">oxygen</span></button>
         <button type="button" class="species-btn h2o" data-species="h2o"><i style="background:#8CA0AE"></i>H2O<span class="hint">water vapor</span></button>
       </div>
 
@@ -278,23 +277,13 @@
           <p class="note-line">Literature points to 227&ndash;420 nm (strong 227&ndash;345 nm, weaker 345&ndash;420 nm &mdash; Vandaele, Hermans &amp; Fally 2009, Hermans, Vandaele &amp; Fally 2009, Bogumil et al. 2003). Metadata-level only, same caveat as NOx: see <code>docs/huellas-absorcion-no2-so2-h2o.md</code>.</p>
         </div>
       </div>
-      <div id="detail-o2" class="card species-panel" hidden>
-        <div class="species-mol" aria-hidden="true">
-          <svg viewBox="0 0 150 110"><line x1="56" y1="55" x2="94" y2="55" stroke="#8B93A0" stroke-width="5"/><circle cx="56" cy="55" r="15" fill="#5B8DBE"/><circle cx="94" cy="55" r="15" fill="#5B8DBE"/><text x="56" y="60" text-anchor="middle" font-family="monospace" font-size="12" fill="#fff">O</text><text x="94" y="60" text-anchor="middle" font-family="monospace" font-size="12" fill="#fff">O</text></svg>
-        </div>
-        <div class="species-text">
-          <span class="formula-badge" style="background:#5B8DBE">O&#8322;</span>
-          <p class="val">Added to the project's scope 2026-10-13 &mdash; not researched before that date. Four candidate bands sit inside the AvaSpec's 200&ndash;871.5&nbsp;nm range: the Herzberg continuum (~200&ndash;245 nm), the A-band (~759&ndash;772 nm, the strongest and the classic remote-sensing "oxygen A-band"), the B-band (~682&ndash;694 nm), and a weak gamma band (~627&ndash;634 nm).</p>
-          <p class="note-line"><b>Caveat:</b> the gamma band is mostly the collisional O2&ndash;O2 complex (Naus &amp; Ubachs 1999), whose strength scales with the <i>square</i> of O2 density &mdash; as a trace gas in a CO2 matrix it may be undetectable in practice even though it shows up in 21%-O2 atmospheric literature. No reference cross-section file chosen yet. See <code>docs/huellas-absorcion-no2-so2-h2o.md</code>.</p>
-        </div>
-      </div>
       <div id="detail-h2o" class="card species-panel" hidden>
         <div class="species-mol" aria-hidden="true">
           <svg viewBox="0 0 150 110"><line x1="75" y1="55" x2="35" y2="85" stroke="#8B93A0" stroke-width="3"/><line x1="75" y1="55" x2="115" y2="85" stroke="#8B93A0" stroke-width="3"/><circle cx="75" cy="55" r="15" fill="#B23B3B"/><circle cx="35" cy="85" r="10" fill="#E7E9EA" stroke="#8B93A0" stroke-width="1.5"/><circle cx="115" cy="85" r="10" fill="#E7E9EA" stroke="#8B93A0" stroke-width="1.5"/><text x="75" y="60" text-anchor="middle" font-family="monospace" font-size="12" fill="#fff">O</text><text x="35" y="89" text-anchor="middle" font-family="monospace" font-size="10" fill="#171D24">H</text><text x="115" y="89" text-anchor="middle" font-family="monospace" font-size="10" fill="#171D24">H</text></svg>
         </div>
         <div class="species-text">
           <span class="formula-badge" style="background:#5C7280">H&#8322;O</span>
-          <p class="val">Residual moisture in the CO2 stream &mdash; a target in its own right, and also a complication: water vapor's own absorption structure can overlap with NOx, SOx and O2 features, which is part of why the fit needs to separate species at once rather than one at a time.</p>
+          <p class="val">Residual moisture in the CO2 stream &mdash; a target in its own right, and also a complication: water vapor's own absorption structure can overlap with NOx and SOx features, which is part of why the fit needs to separate species at once rather than one at a time.</p>
           <p class="note-line">Only weak bands fall inside the AvaSpec's range (~720&ndash;730 nm and ~820 nm) &mdash; the strong H2O bands (940/1130/1370/1450 nm) are outside it, in the Thorlabs PDA10CS-EC's 900&ndash;1700 nm range instead. That's why the IR channel, not the UV-Vis spectrometer, is the better-suited detector for humidity. Metadata-level citations only: see <code>docs/huellas-absorcion-no2-so2-h2o.md</code>.</p>
         </div>
       </div>
@@ -594,7 +583,7 @@ $ doas_cl -c roscope_co2.xml \
 
   /* ---- species buttons (overview) ---- */
   var speciesBtns = document.querySelectorAll('.species-btn');
-  var speciesPanels = { nox: document.getElementById('detail-nox'), sox: document.getElementById('detail-sox'), o2: document.getElementById('detail-o2'), h2o: document.getElementById('detail-h2o') };
+  var speciesPanels = { nox: document.getElementById('detail-nox'), sox: document.getElementById('detail-sox'), h2o: document.getElementById('detail-h2o') };
   var activeSpecies = null;
   speciesBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
