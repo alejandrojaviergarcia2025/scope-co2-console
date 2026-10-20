@@ -125,7 +125,7 @@
   :root[data-theme="dark"] .plain-note{background:#3A3320;border-left-color:#D9B94A;color:#F0DE9E}
 
   /* architecture */
-  .lane-label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+  .lane-label{font-family:var(--mono);font-size:15px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
   .lane{display:flex;align-items:center;gap:2px;overflow-x:auto;padding:4px 2px}
   .node{flex:1 0 120px;min-width:104px;border-radius:9px;padding:12px 10px;color:#fff;font-size:12px;font-weight:600;line-height:1.3;transition:transform .15s ease,box-shadow .15s ease,outline-color .15s ease;cursor:pointer;font-family:inherit;border:none;text-align:center;display:flex;flex-direction:column;align-items:center;outline:2px solid transparent;outline-offset:2px}
   .node:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 8px 18px rgba(20,30,40,.18)}
@@ -321,10 +321,13 @@
             <button type="button" class="node sw" data-title="daq_io.py" data-detail="Implemented. Open/configure/read/close confirmed 2026-10-19 against a real Analog Discovery 3 (serial 210415BD57BA) &mdash; enumerate-then-open in the same call, and always read back the actually-applied channel range rather than trust the request, were both real findings from that test. No PDA10CS-EC signal tested yet (the detector itself is lab equipment)."><svg class="node-icon"><use href="#icon-code"/></svg>Signal Reader<small>Python script</small></button>
           </div>
         </div>
-        <div class="lane" style="justify-content:center">
-          <button type="button" class="node hw" style="flex:0 0 220px" data-title="calibration/" data-detail="Temperature/pressure-dependent cross-section calibration data &mdash; the labscale measurements that make this project's approach quantitative instead of just qualitative. This is the project's own novel contribution, per the ARPA-E proposal. Still open: no lab calibration campaign data exists yet, and the storage format isn't finalized."><svg class="node-icon"><use href="#icon-thermo"/></svg>calibration/<small>T/P data</small></button>
-            <span class="flow"></span>
-          <button type="button" class="node out" style="flex:0 0 240px" data-title="deconvolution/" data-detail="The DOAS fit: optical density in, NOx / SOx / H2O concentrations out. Decided 2026-09-22 (ADR 0004): reimplemented in Python as an explicit, cited port of QDOAS's method, not a call to QDOAS itself. The v1 linear least-squares fit is implemented (ADR 0005); wavelength shift/stretch is the next milestone, not yet built."><svg class="node-icon"><use href="#icon-funnel"/></svg>deconvolution/<small>NOx &middot; SOx &middot; H2O</small></button>
+        <div>
+          <div class="lane-label">Combined pipeline</div>
+          <div class="lane" style="justify-content:center">
+            <button type="button" class="node hw" style="flex:0 0 220px" data-title="calibration/" data-detail="Temperature/pressure-dependent cross-section calibration data &mdash; the labscale measurements that make this project's approach quantitative instead of just qualitative. This is the project's own novel contribution, per the ARPA-E proposal. Still open: no lab calibration campaign data exists yet, and the storage format isn't finalized."><svg class="node-icon"><use href="#icon-thermo"/></svg>calibration/<small>T/P data</small></button>
+              <span class="flow"></span>
+            <button type="button" class="node out" style="flex:0 0 240px" data-title="deconvolution/" data-detail="The DOAS fit: optical density in, NOx / SOx / H2O concentrations out. Decided 2026-09-22 (ADR 0004): reimplemented in Python as an explicit, cited port of QDOAS's method, not a call to QDOAS itself. The v1 linear least-squares fit is implemented (ADR 0005); wavelength shift/stretch is the next milestone, not yet built."><svg class="node-icon"><use href="#icon-funnel"/></svg>deconvolution/<small>NOx &middot; SOx &middot; H2O</small></button>
+          </div>
         </div>
         <div id="arch-detail" class="arch-detail">
           <p class="placeholder">Click any piece above &mdash; hardware, file format, or module &mdash; for what it actually is and where it stands.</p>
