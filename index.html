@@ -317,7 +317,6 @@
             <span class="flow"></span>
             <button type="button" class="node sw" data-title="spectral_io.py" data-detail="Implemented and tested against real lab files: reads both AvaSoft's ASCII .txt Scope-mode export and the native .RAW8 binary, producing the same AvaSpecSpectrum data regardless of which format was read."><svg class="node-icon"><use href="#icon-code"/></svg>spectral_io.py</button>
           </div>
-          <div class="converge-note" style="text-align:left;margin-top:6px">not shown as a box, since it isn't part of the architecture: today, during development, getting this file from the lab machine to wherever spectral_io.py runs is still an unsolved transfer step (OneDrive or something else, ADR 0002). It disappears once the software deploys to the lab laptop &mdash; running there, the file is already local.</div>
         </div>
         <div>
           <div class="lane-label">IR / humidity channel</div>
@@ -331,7 +330,6 @@
             <button type="button" class="node sw" data-title="daq_io.py" data-detail="Implemented. Open/configure/read/close confirmed 2026-10-19 against a real Analog Discovery 3 (serial 210415BD57BA) &mdash; enumerate-then-open in the same call, and always read back the actually-applied channel range rather than trust the request, were both real findings from that test. No PDA10CS-EC signal tested yet (the detector itself is lab equipment)."><svg class="node-icon"><use href="#icon-code"/></svg>daq_io.py</button>
           </div>
         </div>
-        <div class="converge-note">both channels are confirmed to run on the same computer (2026-10-19) and are read at different times, not simultaneously &mdash; no clock-sync problem to solve for this project</div>
         <div class="lane" style="justify-content:center">
           <button type="button" class="node hw" style="flex:0 0 220px" data-title="calibration/" data-detail="Temperature/pressure-dependent cross-section calibration data &mdash; the labscale measurements that make this project's approach quantitative instead of just qualitative. This is the project's own novel contribution, per the ARPA-E proposal. Still open: no lab calibration campaign data exists yet, and the storage format isn't finalized."><svg class="node-icon"><use href="#icon-thermo"/></svg>calibration/<small>T/P calibration data</small></button>
             <span class="flow"></span>
