@@ -304,7 +304,7 @@
             <span class="flow"></span>
             <button type="button" class="node fmt" data-title="Exported file — .txt / .RAW8" data-detail="AvaSoft's Scope-mode export, in either of the two formats it actually produces: the ASCII .txt (the first format this project implemented) or the native binary .RAW8 (added 2026-10-18). Both are confirmed against real lab files, not just the manual."><svg class="node-icon"><use href="#icon-file"/></svg>Exported file<small>.txt / .RAW8</small></button>
             <span class="flow"></span>
-            <button type="button" class="node sw" data-title="spectral_io.py" data-detail="Implemented and tested against real lab files: reads both AvaSoft's ASCII .txt Scope-mode export and the native .RAW8 binary, producing the same AvaSpecSpectrum data regardless of which format was read."><svg class="node-icon"><use href="#icon-code"/></svg>spectral_io.py<small>file reader</small></button>
+            <button type="button" class="node sw" data-title="spectral_io.py" data-detail="Implemented and tested against real lab files: reads both AvaSoft's ASCII .txt Scope-mode export and the native .RAW8 binary, producing the same AvaSpecSpectrum data regardless of which format was read."><svg class="node-icon"><use href="#icon-code"/></svg>Spectrum reader<small>Python script</small></button>
           </div>
         </div>
         <div>
@@ -316,7 +316,7 @@
             <span class="flow"></span>
             <button type="button" class="node fmt" data-title="pydwf" data-detail="The pip-installable Python wrapper around Digilent's WaveForms SDK &mdash; how this channel's signal actually reaches Python."><svg class="node-icon"><use href="#icon-code"/></svg>pydwf<small>device driver</small></button>
             <span class="flow"></span>
-            <button type="button" class="node sw" data-title="daq_io.py" data-detail="Implemented. Open/configure/read/close confirmed 2026-10-19 against a real Analog Discovery 3 (serial 210415BD57BA) &mdash; enumerate-then-open in the same call, and always read back the actually-applied channel range rather than trust the request, were both real findings from that test. No PDA10CS-EC signal tested yet (the detector itself is lab equipment)."><svg class="node-icon"><use href="#icon-code"/></svg>daq_io.py<small>signal reader</small></button>
+            <button type="button" class="node sw" data-title="daq_io.py" data-detail="Implemented. Open/configure/read/close confirmed 2026-10-19 against a real Analog Discovery 3 (serial 210415BD57BA) &mdash; enumerate-then-open in the same call, and always read back the actually-applied channel range rather than trust the request, were both real findings from that test. No PDA10CS-EC signal tested yet (the detector itself is lab equipment)."><svg class="node-icon"><use href="#icon-code"/></svg>Signal reader<small>Python script</small></button>
           </div>
         </div>
         <div class="lane" style="justify-content:center">
