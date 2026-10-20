@@ -315,10 +315,9 @@
             <span class="flow"></span>
             <button type="button" class="node fmt" data-title="Exported file — .txt / .RAW8" data-detail="AvaSoft's Scope-mode export, in either of the two formats it actually produces: the ASCII .txt (the first format this project implemented) or the native binary .RAW8 (added 2026-10-18). Both are confirmed against real lab files, not just the manual."><svg class="node-icon"><use href="#icon-file"/></svg>Exported file<small>.txt / .RAW8</small></button>
             <span class="flow"></span>
-            <button type="button" class="node sync" data-title="OneDrive sync (dev-phase only, not decided)" data-detail="A development-only workaround, not a settled part of the architecture: the exact mechanism for getting a file from the lab machine to the dev machine (OneDrive or something else) is still an open blocker per ADR 0002. It disappears entirely once the software deploys to the lab laptop (ADR 0002's end state) &mdash; running there, AvaSoft's exported files are already local, so there is no sync step in production."><svg class="node-icon"><use href="#icon-cloud"/></svg>OneDrive sync<small>dev machine, unsettled</small></button>
-            <span class="flow"></span>
             <button type="button" class="node sw" data-title="spectral_io.py" data-detail="Implemented and tested against real lab files: reads both AvaSoft's ASCII .txt Scope-mode export and the native .RAW8 binary, producing the same AvaSpecSpectrum data regardless of which format was read."><svg class="node-icon"><use href="#icon-code"/></svg>spectral_io.py</button>
           </div>
+          <div class="converge-note" style="text-align:left;margin-top:6px">not shown as a box, since it isn't part of the architecture: today, during development, getting this file from the lab machine to wherever spectral_io.py runs is still an unsolved transfer step (OneDrive or something else, ADR 0002). It disappears once the software deploys to the lab laptop &mdash; running there, the file is already local.</div>
         </div>
         <div>
           <div class="lane-label">IR / humidity channel</div>
@@ -344,7 +343,6 @@
         <div class="legend">
           <span><i style="background:var(--accent-strong)"></i>Hardware</span>
           <span><i style="background:var(--amber)"></i>File / data format</span>
-          <span><i style="background:#6B7280"></i>Sync / transport</span>
           <span><i style="background:var(--accent)"></i>Software module</span>
           <span><i style="background:var(--green)"></i>Output</span>
         </div>
